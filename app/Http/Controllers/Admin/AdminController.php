@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -99,10 +100,10 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi input
-        $request->validate([
+        // Gunakan Validator manual
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|email:rfc|unique:users,email',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'password' => 'required|string|min:8',
         ], [
@@ -113,40 +114,45 @@ class AdminController extends Controller
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
             'profile_picture.image' => 'File harus berupa gambar.',
-            'profile_picture.mimes' => 'Format gambar tidak valid. Hanya jpeg, png, jpg, gif, svg yang diperbolehkan.',
+            'profile_picture.mimes' => 'Format gambar tidak valid.',
             'profile_picture.max' => 'Ukuran gambar terlalu besar. Maksimal 2MB.',
         ]);
 
+        $validator->after(function ($validator) use ($request) {
+        $domain = substr(strrchr($request->email, "@"), 1);
+
+            if (!$domain || (!checkdnsrr($domain, 'MX') && !checkdnsrr($domain, 'A'))) {
+                $validator->errors()->add('email', 'Domain email tidak valid atau tidak ditemukan.');
+            }
+        });
+
+        // ⛔ STOP otomatis kalau error
+        $validator->validate();
+
         try {
-            // Persiapkan data untuk disimpan
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
+                'email_verified_at' => null,
             ];
 
-            // Cek jika ada gambar yang diupload
+            // Upload gambar
             if ($request->hasFile('profile_picture')) {
-                // Ambil file gambar dan konversikan ke base64
                 $file = $request->file('profile_picture');
                 $imageData = file_get_contents($file);
-                $base64Image = base64_encode($imageData);
-
-                // Tambahkan gambar dalam format base64 ke data
-                $data['profile_picture'] = $base64Image;
+                $data['profile_picture'] = base64_encode($imageData);
             }
 
-            // Simpan data user ke database
             $user = User::create($data);
-
-            // Menambahkan role 'admin' ke user
             $user->assignRole('admin');
+            $user->sendEmailVerificationNotification();
 
             return redirect()->route('admin.index')->with([
                 'status' => 'success',
-                'code' => 200,
-                'message' => 'Admin berhasil dibuat.'
+                'message' => 'Admin berhasil dibuat. Silakan cek email untuk aktivasi akun.'
             ]);
+
         } catch (\Exception $e) {
             return redirect()->route('admin.index')->with([
                 'status' => 'error',
@@ -199,7 +205,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $admin->id,
+            'email' => 'required|email:rfc|unique:users,email' . $admin->id,
             'password' => 'nullable|string|min:8',
             'profile_picture' => 'nullable|image|max:2048', // max 2MB
         ], [

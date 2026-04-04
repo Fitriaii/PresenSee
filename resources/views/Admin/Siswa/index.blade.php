@@ -70,7 +70,7 @@
 
             <!-- Filter & Controls -->
             <form method="GET" action="{{ route('siswa.index') }}" id="filterForm" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
 
                     <!-- Tahun Ajaran Filter -->
                     <div class="space-y-2">
@@ -111,6 +111,16 @@
                         </select>
                     </div>
 
+                    <!-- Status Data Wajah -->
+                    <div class="space-y-2">
+                        <label for="filter_foto" class="block text-sm font-semibold text-gray-700">Status Data Wajah</label>
+                        <select id="filter_foto" name="filter_foto"
+                            class="w-full px-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 dark:bg-white dark:text-gray-900 dark:border-gray-300 focus:ring-purple-500/20 focus:border-purple-500 focus:outline-none transition-colors duration-200">
+                            <option value="">Semua</option>
+                            <option value="tersedia" {{ request('filter_foto') == 'tersedia' ? 'selected' : '' }}>Tersedia</option>
+                            <option value="belum" {{ request('filter_foto') == 'belum' ? 'selected' : '' }}>Belum Tersedia</option>
+                        </select>
+                    </div>
 
                     <!-- Sort By -->
                     <div class="space-y-2">
@@ -277,7 +287,7 @@
 
     // Auto-submit filter form saat filter berubah
     const filterForm = document.getElementById('filterForm');
-    ['tahun_ajaran', 'jenis_kelas', 'kelas', 'sort'].forEach(id => {
+    ['tahun_ajaran', 'jenis_kelas', 'kelas', 'filter_foto', 'sort'].forEach(id => {
         const el = document.getElementById(id);
         if (el && filterForm) {
             el.addEventListener('change', () => {

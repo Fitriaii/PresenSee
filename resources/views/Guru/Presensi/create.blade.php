@@ -665,7 +665,6 @@
             }
             clearFaceFrames();
 
-            // Tambahkan ini:
             window.location.reload(); // Reload seluruh halaman
         }
     }
@@ -698,7 +697,7 @@
         });
         const badge = document.createElement('div');
         badge.className = 'confidence-badge';
-        badge.textContent = `${name || 'Terdeteksi'} (${Math.round(confidence)})`;
+        badge.textContent = `${name || 'Terdeteksi'} (Akurasi: ${Math.round(confidence)})`;
         frame.appendChild(badge);
         videoWrapper.appendChild(frame);
         setTimeout(() => frame.remove(), 2000);
@@ -789,13 +788,13 @@
 
             if (data.status === 'success') {
                 soundSuccess.play();
-                Swal.fire('Presensi Berhasil', `${data.data.siswa} tercatat.`, 'success');
+                Swal.fire(`${data.data.siswa} tercatat.`, 'Presensi Berhasil', 'success');
                 if (typeof updateAttendanceList === 'function') {
                     updateAttendanceList(siswaNis, data.data.siswa);
                 }
             } else if (data.status === 'already_marked') {
                 soundAlready.play();
-                Swal.fire('Sudah Presensi', `${data.data.siswa} sudah tercatat.`, 'info');
+                Swal.fire(`${data.data.siswa} sudah tercatat.`, 'Sudah Presensi', 'info');
             } else if (data.status === 'not_allowed') {
                 soundWarning.play();
                 const siswaName = data.nama_siswa || 'Siswa';

@@ -74,6 +74,16 @@ class SiswaController extends Controller
             });
         }
 
+        // 🎯 Filter: Ketersediaan Foto
+        if ($request->filled('filter_foto')) {
+            if ($request->filter_foto === 'tersedia') {
+                $query->whereNotNull('foto_siswa')->where('foto_siswa', '!=', '[]');
+            } elseif ($request->filter_foto === 'belum') {
+                $query->where(function ($q) {
+                    $q->whereNull('foto_siswa')->orWhere('foto_siswa', '[]');
+                });
+            }
+        }
 
         // ↕️ Sorting
         switch ($request->sort) {
@@ -280,7 +290,7 @@ class SiswaController extends Controller
 
             // Kirim request ke Flask untuk hapus data wajah
             try {
-                $response = Http::timeout(10)->post('http://10.69.11.252:5050/face-clear-siswa', [
+                $response = Http::timeout(10)->post('http://10.69.5.59:5050/face-clear-siswa', [
                     'nis' => $nis,
                     'kelas_id' => $kelasId
                 ]);
@@ -466,7 +476,7 @@ class SiswaController extends Controller
 
         // 3. Kirim seluruh gambar ke Flask
         try {
-            $response = Http::timeout(30)->post('http://192.168.1.8:5050/face-train', [
+            $response = Http::timeout(30)->post('http://127.0.0.1:5050/face-train', [
                 'nis' => $nis,
                 'kelas_id' => $kelasId, // Kirim ID kelas ke Flask
                 'images' => $images

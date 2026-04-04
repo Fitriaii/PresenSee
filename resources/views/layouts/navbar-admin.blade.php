@@ -101,50 +101,7 @@
                     aria-label="submenu"
                     x-cloak
                 >
-                    {{-- <!-- User Info Header -->
-                    <div class="px-4 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-orange-50 rounded-t-xl">
-                        <div class="flex items-center space-x-3">
-                            @if(Auth::user()->profile_picture)
-                                <img
-                                    src="data:image/jpeg;base64,{{ Auth::user()->profile_picture }}"
-                                    alt="Foto Profil"
-                                    class="object-cover w-12 h-12 rounded-full shadow-sm ring-2 ring-white"
-                                />
-                            @else
-                                <div class="flex items-center justify-center w-12 h-12 rounded-full shadow-md bg-gradient-to-br from-purple-600 to-orange-500 ring-2 ring-white">
-                                    <span class="text-lg font-semibold text-white font-heading">
-                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                    </span>
-                                </div>
-                            @endif
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900 font-heading">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-gray-600">{{ Auth::user()->email ?? 'user@example.com' }}</p>
-                                @auth
-                                    <p class="text-xs font-medium text-purple-600">
-                                        {{ Auth::user()->getRoleNames()->first() ?? 'User' }}
-                                    </p>
-                                @endauth
-                            </div>
-                        </div>
-                    </div> --}}
-
-                    <!-- Menu Items -->
-                    {{-- <div class="py-2">
-                        <li>
-                            <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 transition-colors duration-150 group hover:bg-gray-50 hover:text-gray-900" role="menuitem">
-                                <div class="flex items-center justify-center w-8 h-8 mr-3 transition-colors duration-150 bg-blue-100 rounded-lg group-hover:bg-blue-200">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium">Profil Saya</p>
-                                    <p class="text-xs text-gray-500">Kelola informasi profil</p>
-                                </div>
-                            </a>
-                        </li>
-                    </div> --}}
+                    <!-- User Info Header -->
 
                     <!-- Logout -->
                     <li class="flex flex-col">

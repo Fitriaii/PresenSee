@@ -32,7 +32,6 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
-
     Route::get('/test-404', function () {
         abort(404);
     })->name('test.404');

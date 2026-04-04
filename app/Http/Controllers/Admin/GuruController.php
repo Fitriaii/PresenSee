@@ -105,7 +105,7 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'email' => 'required|email:rfc,dns|unique:users,email',
             'password' => 'required|string|min:8',
             'nip' => 'required|string|max:255|unique:guru,nip',
             'alamat' => 'required|string|max:255',
@@ -144,11 +144,22 @@ class GuruController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $email = $request->email;
+            $domain = substr(strrchr($email, "@"), 1);
+
+            if (!checkdnsrr($domain, 'MX')) {
+                return back()->withErrors([
+                    'email' => 'Domain email tidak ditemukan atau tidak valid.'
+                ])->withInput();
+            };
+
             // Simpan ke tabel users
             $user = new User();
             $user->name = $validated['nama_guru'];
             $user->email = $validated['email'];
             $user->password = Hash::make($validated['password']);
+            $user->email_verified_at = null;
             $user->save();
 
             // Berikan role guru
@@ -167,16 +178,17 @@ class GuruController extends Controller
 
             DB::commit();
 
+            $user->sendEmailVerificationNotification();
+
             return redirect()->route('guru.index')->with([
                 'status' => 'success',
                 'code' => 200,
-                'message' => "Guru {$validated['nama_guru']} berhasil ditambahkan."
+                'message' => "Guru {$validated['nama_guru']} berhasil ditambahkan. Silakan minta guru cek email untuk aktivasi akun."
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Gagal menyimpan data guru: ' . $e->getMessage());
 
-            dd($guru);
             return redirect()->back()->withInput()->with([
                 'status' => 'error',
                 'code' => 500,
@@ -184,9 +196,6 @@ class GuruController extends Controller
             ]);
         }
     }
-
-
-
 
     /**
      * Display the specified resource.
@@ -236,7 +245,7 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
-            'email' => "required|string|email|max:255|unique:users,email,{$guru->user->id}", // Abaikan email user yang sedang diedit
+            'email' => "required|email:rfc,dns|unique:users,email,{$guru->user->id}", // Abaikan email user yang sedang diedit
             'nip' => 'required|string|max:255|unique:guru,nip,' . $guru->id, // Abaikan NIP guru yang sedang diedit
             'alamat' => 'required|string|max:255',
             'no_hp' => 'required|string|max:15',

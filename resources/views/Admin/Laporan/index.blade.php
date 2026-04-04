@@ -22,7 +22,35 @@
 
     <!-- Filter Section -->
     <div class="bg-white rounded-sm shadow-sm">
+
         <div class="p-6">
+
+            <div x-data="{ show: true }" x-show="show" x-transition class="p-4 mb-6 text-blue-500 bg-blue-100 border border-blue-200 rounded-lg">
+                <div class="flex items-start justify-between">
+                    <div class="w-full">
+                        <h1 class="mb-1 text-base font-bold text-blue-600 font-heading">Export Laporan Presensi</h1>
+                        <hr class="mb-2 border-blue-300">
+                        <div class="flex items-start gap-2 font-sans text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p>Export laporan hanya akan mempertimbangkan <span class="font-semibold text-blue-700">filter mata pelajaran</span> yang dipilih.</p>
+                                <p class="mt-1 text-blue-600">Meskipun Anda menerapkan filter lainnya seperti kelas, tahun ajaran, atau periode, data yang diekspor tetap akan mencakup seluruh data berdasarkan mata pelajaran yang dipilih.</p>
+                                <p class="mt-1 text-xs italic text-blue-500">Pastikan Anda memilih mata pelajaran sebelum menekan tombol export.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button @click="show = false" class="ml-4 text-blue-600 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mt-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <!-- Filter Header -->
             <div class="flex items-center pb-4 mb-6 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
@@ -235,36 +263,38 @@
     <div class="mt-1 bg-white rounded-sm shadow-sm">
         <div class="p-6">
             <div class="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                <div>
-                    <h3 class="text-lg font-semibold text-purple-800">Export Laporan Presensi</h3>
-                    <p class="mt-1 text-sm text-gray-600">
-                        Unduh laporan presensi siswa berdasarkan mata pelajaran terpilih.
-                    </p>
-                </div>
-
-                <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-
-                    <form id="exportPdfForm" action="{{ route('laporan.exportPdf') }}" method="POST" class="inline-block">
-                        @csrf
-
-                        <!-- Hanya mapel_id -->
-                        <input type="hidden" name="mapel_id" value="{{ request('mapel_id') }}">
-
-                        <button type="submit"
-                            class="w-full px-4 py-2 text-red-700 transition-colors border border-red-200 rounded-lg sm:w-auto bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500">
-                            <span class="flex items-center justify-center text-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                                </svg>
-                                Export PDF
-                            </span>
-                        </button>
-                    </form>
-
-                </div>
+            <div>
+                <h3 class="text-lg font-semibold text-purple-800">Export Laporan Presensi</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                    Laporan yang akan diunduh hanya berdasarkan <span class="font-semibold text-purple-900">mata pelajaran</span> yang dipilih.
+                </p>
+                <p class="mt-1 text-xs italic text-red-600">
+                    *Filter lain seperti kelas, tahun ajaran, dan periode tidak memengaruhi isi laporan.
+                </p>
             </div>
+
+            <div class="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+                <form id="exportPdfForm" action="{{ route('laporan.exportPdf') }}" method="POST" class="inline-block">
+                    @csrf
+
+                    <!-- Hanya mapel_id -->
+                    <input type="hidden" name="mapel_id" value="{{ request('mapel_id') }}">
+
+                    <button type="submit"
+                        class="w-full px-4 py-2 text-red-700 transition-colors border border-red-200 rounded-lg sm:w-auto bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <span class="flex items-center justify-center text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+                            Export PDF
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
         </div>
     </div>
 </div>
@@ -501,15 +531,15 @@
                 const format = this.action.includes('excel') ? 'Excel' : 'PDF';
 
                 Swal.fire({
-                    title: `Export ke ${format}?`,
-                    text: `Apakah Anda yakin ingin mengexport laporan ke format ${format}?`,
-                    icon: 'question',
+                    title: 'Export PDF?',
+                    text: 'Laporan hanya akan berisi data berdasarkan mata pelajaran yang dipilih. Filter lain tidak digunakan.',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Ya, export',
+                    confirmButtonText: 'Lanjutkan Export',
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        exportForm.submit(); // Submit form jika dikonfirmasi
+                        document.getElementById('exportPdfForm').submit();
                     }
                 });
             });
