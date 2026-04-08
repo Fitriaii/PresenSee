@@ -168,8 +168,9 @@
                             class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 dark:bg-white dark:text-gray-900 dark:border-gray-300 focus:ring-purple-500/20 focus:border-purple-500">
                             <option value="" disabled {{ old('mapel_id') ? '' : 'selected' }}>Pilih Mapel</option>
                             @foreach ($mapelList as $mapel)
-                                <option value="{{ $mapel->id }}" data-guru="{{ $mapel->guru->nama_guru }}"
-                                    {{ old('mapel_id') == $mapel->id ? 'selected' : '' }}>
+                               <option value="{{ $mapel->id }}"
+                                    data-guru="{{ $mapel->guru->nama_guru ?? '' }}"
+                                    {{ old('mapel_id', $jadwal->mapel_id) == $mapel->id ? 'selected' : '' }}>
                                     {{ $mapel->nama_mapel }}
                                 </option>
                             @endforeach
@@ -188,14 +189,14 @@
                         </label>
                     </div>
                     <div class="lg:col-span-2">
-                        <input type="hidden" name="guru_pengampu" id="guru_pengampu_hidden" value="{{ old('guru_pengampu') }}">
+                        <input type="hidden" name="guru_pengampu" id="guru_pengampu_hidden" value="{{ old('guru_pengampu', $jadwal->guru_pengampu) }}">
                         <input
                             type="text"
                             id="guru_pengampu"
                             class="w-full px-4 py-3 mb-4 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 dark:bg-white dark:text-gray-900 dark:border-gray-300 focus:ring-purple-500/20 focus:border-purple-500"
                             readonly
                             placeholder="Guru Pengampu akan tampil di sini"
-                            value="{{ old('guru_pengampu') }}">
+                            value="{{ old('guru_pengampu', $jadwal->guru_pengampu) }}">
 
                         @error('guru_pengampu')
                             <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
@@ -225,26 +226,18 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const mapelSelect = document.getElementById('mapel');
+    window.addEventListener('load', function () {
+        const mapel = document.getElementById('mapel');
         const guruInput = document.getElementById('guru_pengampu');
-        const hiddenInput = document.getElementById('guru_pengampu_hidden');
+        const guruHidden = document.getElementById('guru_pengampu_hidden');
 
-        function updateGuruPengampu() {
-            const selectedOption = mapelSelect.options[mapelSelect.selectedIndex];
-            const guru = selectedOption.getAttribute('data-guru') || '-';
+        const selectedOption = mapel.options[mapel.selectedIndex];
+        const guru = selectedOption.getAttribute('data-guru');
+
+        // ✅ hanya set kalau ADA nilainya
+        if (guru && guru.trim() !== '') {
             guruInput.value = guru;
-            if (hiddenInput) {
-                hiddenInput.value = guru;
-            }
-        }
-
-        // Update saat dropdown berubah
-        mapelSelect.addEventListener('change', updateGuruPengampu);
-
-        // Update otomatis saat halaman dimuat (untuk old value)
-        if (mapelSelect.value) {
-            updateGuruPengampu();
+            guruHidden.value = guru;
         }
     });
 
@@ -260,6 +253,8 @@
             inputJamSelesai.showPicker();
         });
     }
+
+
 </script>
 
 

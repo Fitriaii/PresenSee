@@ -99,7 +99,7 @@
                                     max="2099"
                                     required
                                     placeholder="Contoh: 2025"
-                                    value="{{ old('tahun_akhir', explode('/', $ta ?? '')[1]) }}"
+                                    value="{{ old('tahun_akhir', explode('/', $ta ?? '')[1] ?? '') }}"
                                     class="w-full px-4 py-3 pr-8 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 dark:bg-white dark:text-gray-900 dark:border-gray-300 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
                                 />
                                 <div class="absolute inset-y-0 flex flex-col justify-center right-2">

@@ -152,7 +152,7 @@
                         id="waktu_presensi"
                         class="px-4 py-2 text-sm text-black border border-gray-400 rounded outline-none w-60 bg-inherit hover:border-purple-600 focus:border-purple-600"
                         required
-                        :readonly="tab === 'kamera'"
+                        :readonly="tab === 'kamera'|| tab === 'manual'"
                     >
                     @error('waktu_presensi')
                         <div class="mt-1 text-sm text-red-500">{{ $message }}</div>
@@ -534,7 +534,7 @@
     const waktuPresensiInput = document.getElementById('waktu_presensi');
 
 
-    const FLASK_API_URL = 'http://127.0.0.1:5050/recognize';
+    const FLASK_API_URL = "{{ rtrim(config('services.facerec.url'), '/') }}/api/face_recognize";
     const soundSuccess = new Audio('/sounds/success.mp3');
     const soundAlready = new Audio('/sounds/already.mp3');
     const soundFail = new Audio('/sounds/fail.mp3');
@@ -550,22 +550,23 @@
     let siswaPresensiSet = new Set();
 
     window.addEventListener('DOMContentLoaded', () => {
-        const today = new Date().toDateString(); // Format: "Wed Jul 10 2025"
+        const now = new Date();
+        const today = formatDateLocal(now);
         const data = JSON.parse(localStorage.getItem(storageKey) || '[]');
 
-        // Bersihkan data jika tanggal tidak sesuai
         if (data.length && data[0].tanggal !== today) {
             localStorage.removeItem(storageKey);
-            return;
         }
 
         if (data.length > 0) removeEmptyMessage();
 
         data.forEach(item => {
             siswaPresensiSet.add(item.nis);
+
             const card = document.createElement('div');
             card.setAttribute('data-nis', item.nis);
             card.className = 'bg-white rounded-md shadow p-3 text-xs text-gray-700 flex items-center gap-2';
+
             card.innerHTML = `
                 <div class="px-2 py-1 font-semibold text-green-600 bg-green-100 rounded">✔</div>
                 <div>
@@ -573,9 +574,65 @@
                     <div class="text-gray-500">${item.waktu}</div>
                 </div>
             `;
+
             document.getElementById('attendanceHistory').appendChild(card);
         });
+
+        startRealtimeClock();
+        startRealtimeInput();
     });
+
+    function formatDateTimeLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    function formatDateLocal(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    }
+
+    function startRealtimeInput() {
+        const input = document.getElementById('waktu_presensi');
+        if (!input) return;
+
+        function update() {
+            input.value = formatDateTimeLocal(new Date());
+        }
+
+        update();
+        setInterval(update, 1000);
+    }
+
+    function startRealtimeClock() {
+        const el = document.getElementById('currentTime');
+        if (!el) return;
+
+        function update() {
+            const now = new Date();
+
+            el.textContent = now.toLocaleString('id-ID', {
+                weekday: 'long',
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        update();
+        setInterval(update, 1000);
+    }
 
 
     // 2. Fungsi update list

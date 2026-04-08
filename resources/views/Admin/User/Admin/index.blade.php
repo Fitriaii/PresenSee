@@ -143,7 +143,7 @@
                     <!-- Kanan: Info waktu update -->
                     <div class="text-gray-500">
                         Terakhir diperbarui:
-                        <span class="font-medium">{{ $admins->first()->updated_at->diffForHumans() }}</span>
+                        <span class="font-medium">{{ optional($admins->first())->updated_at?->diffForHumans() ?? '-' }}</span>
                     </div>
                 </div>
             </div>

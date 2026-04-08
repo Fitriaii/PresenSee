@@ -142,7 +142,7 @@
                     <!-- Kanan: Info waktu update -->
                     <div class="text-gray-500">
                         Terakhir diperbarui:
-                        <span class="font-medium">{{ $userGuru->first()->updated_at->diffForHumans() }}</span>
+                        <span class="font-medium">{{ optional($userGuru->first())->updated_at?->diffForHumans() ?? '-' }}</span>
                     </div>
                 </div>
             </div>

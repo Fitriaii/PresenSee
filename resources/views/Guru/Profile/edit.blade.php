@@ -43,7 +43,7 @@
                             value="{{ old('nama_guru', isset($guru) ? $guru->nama_guru : '') }}"
                             required
                             placeholder="Masukkan nama lengkap"
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         />
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                             value="{{ old('nip', isset($guru) ? $guru->nip : '') }}"
                             required
                             placeholder="Masukkan NIP"
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         />
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                             value="{{ old('email', isset($guru) ? $guru->user->email : '') }}"
                             required
                             placeholder="guru@example.com"
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         />
                         <p class="mt-2 text-xs text-gray-500">Masukkan dengan format email yang valid</p>
                     </div>
@@ -105,7 +105,7 @@
                                     id="profile_picture"
                                     name="profile_picture"
                                     accept="image/*"
-                                    class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none dark:file:text-purple-400 hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                    class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none dark:file:text-purple-400 hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                                 />
 
                             </div>
@@ -149,7 +149,7 @@
                             value="{{ old('no_hp', isset($guru) ? $guru->no_hp : '') }}"
                             required
                             placeholder="Masukkan nomor telepon"
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         />
                     </div>
                 </div>
@@ -168,7 +168,7 @@
                             required
                             rows="3"
                             placeholder="Masukkan alamat lengkap"
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none resize-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none resize-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         >{{ old('alamat', isset($guru) ? $guru->alamat : '') }}</textarea>
 
                     </div>
@@ -186,7 +186,7 @@
                             id="jenis_kelamin"
                             name="jenis_kelamin"
                             required
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         >
                             <option value="" disabled {{ old('jenis_kelamin', isset($guru) ? $guru->jenis_kelamin : '') == '' ? 'selected' : '' }}>Pilih jenis kelamin</option>
                             <option value="Laki-Laki" {{ old('jenis_kelamin', isset($guru) ? $guru->jenis_kelamin : '') == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
@@ -207,7 +207,7 @@
                             id="status_keaktifan"
                             name="status_keaktifan"
                             required
-                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100"
+                            class="w-full px-4 py-3 text-sm transition-colors duration-200 border border-gray-300 rounded-lg outline-none hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-100 dark:bg-white dark:text-gray-900 dark:border-gray-300"
                         >
                             <option value="" disabled {{ old('status_keaktifan', isset($guru) ? $guru->status_keaktifan : '') == '' ? 'selected' : '' }}>Pilih status keaktifan</option>
                             <option value="Aktif" {{ old('status_keaktifan', isset($guru) ? $guru->status_keaktifan : '') == 'Aktif' ? 'selected' : '' }}>Aktif</option>

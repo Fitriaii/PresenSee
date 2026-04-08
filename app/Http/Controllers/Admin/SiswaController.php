@@ -7,6 +7,7 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Siswa_Kelas;
 use App\Models\TahunAjaran;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -277,8 +278,9 @@ class SiswaController extends Controller
         try {
             $nis = $siswa->nis;
 
-            // Ambil ID kelas aktif siswa
+            // Ambil kelas aktif
             $siswaKelas = Siswa_Kelas::where('siswa_id', $siswa->id)->latest()->first();
+
             if (!$siswaKelas || !$siswaKelas->kelas) {
                 return redirect()->route('siswa.index')->with([
                     'status' => 'error',
@@ -288,31 +290,53 @@ class SiswaController extends Controller
 
             $kelasId = $siswaKelas->kelas->id;
 
-            // Kirim request ke Flask untuk hapus data wajah
+            # ========================== #
+            # 🔥 Guzzle Client
+            # ========================== #
             try {
-                $response = Http::timeout(10)->post('http://10.69.5.59:5050/face-clear-siswa', [
-                    'nis' => $nis,
-                    'kelas_id' => $kelasId
+                $client = new Client([
+                    'base_uri' => rtrim(config('services.facerec.url'), '/') . '/',
+                    'timeout' => 10,
+                    'http_errors' => false, // biar tidak throw exception
                 ]);
 
-                if (!$response->ok()) {
-                    Log::warning('Gagal hapus data siswa di Flask', ['response' => $response->body()]);
+                $response = $client->post('api/face-clear', [
+                    'json' => [
+                        'nis' => (string) $nis,
+                        'kelas_id' => (string) $kelasId
+                    ],
+                ]);
+
+                $body = json_decode((string) $response->getBody(), true);
+
+                if (empty($body['success'])) {
+                    Log::warning('Gagal hapus data siswa di Face Service', [
+                        'nis' => $nis,
+                        'kelas_id' => $kelasId,
+                        'response' => $body
+                    ]);
                 }
-            } catch (\Exception $e) {
-                Log::error('Gagal menghubungi server Flask saat hapus siswa', ['error' => $e->getMessage()]);
+
+            } catch (\Throwable $e) {
+                Log::error('Gagal menghubungi Face Service', [
+                    'error' => $e->getMessage()
+                ]);
             }
 
-            // Hapus dari database Laravel
+            # ========================== #
+            # Hapus dari DB
+            # ========================== #
             $siswa->delete();
 
             return redirect()->route('siswa.index')->with([
                 'status' => 'success',
                 'message' => 'Siswa berhasil dihapus.'
             ]);
+
         } catch (\Exception $e) {
             return redirect()->route('siswa.index')->with([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan saat menghapus data siswa: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ]);
         }
     }
@@ -324,114 +348,20 @@ class SiswaController extends Controller
         return view('admin.siswa.facetrain', compact('siswa'));
     }
 
-    // public function captureAndTrain(Request $request, $id)
-    // {
-    //     $siswa = Siswa::findOrFail($id);
-    //     $images = $request->get('images');
-
-    //     if (!$images || !is_array($images)) {
-    //         Log::error("Data gambar tidak valid untuk siswa ID: {$id}");
-    //         return response()->json(['message' => 'Data gambar tidak valid'], 422);
-    //     }
-
-    //     $nis = $siswa->nis;
-    //     $folder = "faces/{$nis}";
-
-    //     // 1. Hapus folder lama dan buat ulang
-    //     try {
-    //         if (Storage::disk('public')->exists($folder)) {
-    //             Storage::disk('public')->deleteDirectory($folder);
-    //         }
-    //         Storage::disk('public')->makeDirectory($folder);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Gagal menyiapkan folder penyimpanan.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-
-    //     // 2. Simpan gambar ke folder Laravel
-    //     $paths = [];
-    //     foreach ($images as $index => $imgData) {
-    //         try {
-    //             $image = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imgData));
-    //             $filename = "$folder/img_{$index}.jpg";
-    //             Storage::disk('public')->put($filename, $image);
-    //             $paths[] = $filename;
-    //         } catch (\Exception $e) {
-    //             return response()->json([
-    //                 'status' => 'error',
-    //                 'message' => "Gagal menyimpan gambar ke-$index.",
-    //                 'error' => $e->getMessage()
-    //             ], 500);
-    //         }
-    //     }
-
-    //     // 3. Kirim seluruh gambar ke Flask (sekali saja)
-    //     try {
-    //         $response = Http::timeout(30)->post('http://10.69.1.103:5050/face-train', [
-    //             'nis' => $nis,
-    //             'images' => $images // array of base64
-    //         ]);
-
-    //         if (!$response->ok() || $response->json('success') !== true) {
-    //             Log::error("Flask training gagal (batch)", [
-    //                 'nis' => $nis,
-    //                 'response' => $response->body()
-    //             ]);
-
-    //             return response()->json([
-    //                 'status' => 'error',
-    //                 'message' => 'Gagal training di Flask.',
-    //                 'flask_response' => $response->body()
-    //             ], 500);
-    //         }
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Gagal menghubungi server Flask.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-
-    //     // 4. Simpan path gambar ke database (kolom foto_siswa)
-    //     try {
-    //         $siswa->foto_siswa = json_encode($paths);
-    //         $siswa->save();
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Gagal menyimpan data ke database.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-
-    //     // 5. Berhasil
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'message' => 'Training berhasil untuk semua gambar.',
-    //         'redirect' => route('siswa.index')
-    //     ]);
-    // }
-
-
-
     public function captureAndTrain(Request $request, $id)
     {
         $siswa = Siswa::findOrFail($id);
         $images = $request->get('images');
 
         if (!$images || !is_array($images)) {
-            Log::error("Data gambar tidak valid untuk siswa ID: {$id}");
             return response()->json(['message' => 'Data gambar tidak valid'], 422);
         }
 
         $nis = $siswa->nis;
 
-        // Ambil ID kelas aktif dari relasi siswa_kelas
+        // Ambil kelas
         $siswaKelas = Siswa_Kelas::where('siswa_id', $siswa->id)->latest()->first();
+
         if (!$siswaKelas || !$siswaKelas->kelas) {
             return response()->json([
                 'status' => 'error',
@@ -439,11 +369,13 @@ class SiswaController extends Controller
             ], 500);
         }
 
-        $kelasId = $siswaKelas->kelas->id; // Kirim ID kelas ke Flask (misalnya: 12)
+        $kelasId = $siswaKelas->kelas->id;
 
         $folder = "faces/{$nis}";
 
-        // 1. Hapus folder lama dan buat ulang
+        # ========================== #
+        # 1. Reset folder
+        # ========================== #
         try {
             if (Storage::disk('public')->exists($folder)) {
                 Storage::disk('public')->deleteDirectory($folder);
@@ -452,73 +384,95 @@ class SiswaController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Gagal menyiapkan folder penyimpanan.',
+                'message' => 'Gagal menyiapkan folder.',
                 'error' => $e->getMessage()
             ], 500);
         }
 
-        // 2. Simpan gambar ke folder Laravel
+        # ========================== #
+        # 2. Simpan gambar ke Laravel
+        # ========================== #
         $paths = [];
+
         foreach ($images as $index => $imgData) {
             try {
                 $image = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imgData));
                 $filename = "$folder/img_{$index}.jpg";
+
                 Storage::disk('public')->put($filename, $image);
                 $paths[] = $filename;
+
             } catch (\Exception $e) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => "Gagal menyimpan gambar ke-$index.",
+                    'message' => "Gagal simpan gambar ke-$index",
                     'error' => $e->getMessage()
                 ], 500);
             }
         }
 
-        // 3. Kirim seluruh gambar ke Flask
+        # ========================== #
+        # 3. Kirim ke Face Service
+        # ========================== #
         try {
-            $response = Http::timeout(30)->post('http://127.0.0.1:5050/face-train', [
-                'nis' => $nis,
-                'kelas_id' => $kelasId, // Kirim ID kelas ke Flask
-                'images' => $images
+            $client = new Client([
+                'base_uri' => rtrim(config('services.facerec.url'), '/') . '/',
+                'timeout' => 30,
+                'http_errors' => false,
             ]);
 
-            if (!$response->ok() || $response->json('success') !== true) {
-                Log::error("Flask training gagal (batch)", [
+            $response = $client->post('api/face-register', [
+                'json' => [
+                    'nis' => (string) $nis,
+                    'name' => $siswa->nama_siswa,
+                    'kelas_id' => (string) $kelasId,
+                    'images' => $images
+                ],
+            ]);
+
+            $body = json_decode((string) $response->getBody(), true);
+
+            if (empty($body['success'])) {
+                Log::error("Face service gagal", [
                     'nis' => $nis,
-                    'response' => $response->body()
+                    'response' => $body
                 ]);
 
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Gagal training di Flask.',
-                    'flask_response' => $response->body()
+                    'message' => 'Register Wajah gagal di service',
+                    'response' => $body
                 ], 500);
             }
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Gagal menghubungi server Flask.',
+                'message' => 'Face service tidak tersedia',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 503);
         }
 
-        // 4. Simpan path gambar ke database
+        # ========================== #
+        # 4. Simpan ke database
+        # ========================== #
         try {
             $siswa->foto_siswa = json_encode($paths);
             $siswa->save();
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Gagal menyimpan data ke database.',
+                'message' => 'Gagal simpan database',
                 'error' => $e->getMessage()
             ], 500);
         }
 
-        // 5. Berhasil
+        # ========================== #
+        # 5. Success
+        # ========================== #
         return response()->json([
             'status' => 'success',
-            'message' => 'Training berhasil untuk semua gambar.',
+            'message' => 'Register Wajah berhasil',
             'redirect' => route('siswa.index')
         ]);
     }
