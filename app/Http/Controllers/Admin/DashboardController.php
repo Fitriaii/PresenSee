@@ -226,7 +226,7 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.dashboard-admin', [
+        return view('Admin.dashboard-admin', [
             'jumlahSiswa' => $jumlahSiswa,
             'jumlahGuru' => $jumlahGuru,
             'jumlahKelas' => $jumlahKelas,

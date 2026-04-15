@@ -135,7 +135,7 @@ class LaporanController extends Controller
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('admin.laporan.index', [
+        return view('Admin.Laporan.index', [
             'user' => $user,
             'data' => $rekapPerSiswa,
             'rekapPerSiswa' => $rekapPerSiswa,
@@ -254,7 +254,7 @@ class LaporanController extends Controller
             'mapel' => Mapel::find($request->mapel_id)?->nama_mapel ?? null,
         ];
 
-        $pdf = Pdf::loadView('admin.laporan.laporanpdf', [
+        $pdf = Pdf::loadView('Admin.Laporan.laporanpdf', [
             'rekap' => $rekapPerSiswa,
             'presensi' => $presensi,
             'filter' => $filter,

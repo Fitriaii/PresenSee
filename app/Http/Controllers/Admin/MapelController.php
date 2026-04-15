@@ -74,7 +74,7 @@ class MapelController extends Controller
     // Paginate
     $mapel = $mapelQuery->paginate(10);
 
-    return view('admin.akademik.mapel.index', compact('user', 'mapel', 'guruList', 'tahunList'));
+    return view('Admin.Akademik.Mapel.index', compact('user', 'mapel', 'guruList', 'tahunList'));
     }
 
 
@@ -85,7 +85,7 @@ class MapelController extends Controller
     public function create()
     {
         $guruList = Guru::all();
-        return view('admin.akademik.mapel.create', compact('guruList'));
+        return view('Admin.Akademik.Mapel.create', compact('guruList'));
     }
 
     /**
@@ -131,7 +131,7 @@ class MapelController extends Controller
     public function show(Mapel $mapel)
     {
         // Show the details of the specified mapel
-        return view('admin.akademik.mapel.show', compact('mapel'));
+        return view('Admin.Akademik.Mapel.show', compact('mapel'));
     }
     /**
      * Show the form for editing the specified resource.
@@ -139,7 +139,7 @@ class MapelController extends Controller
     public function edit(Mapel $mapel)
     {
         $guruList = Guru::all();
-        return view('admin.akademik.mapel.edit', [
+        return view('Admin.Akademik.Mapel.edit', [
             'mapel' => $mapel,
             'guruList' => $guruList,
             'selectedGuru' => $mapel->guru_id,

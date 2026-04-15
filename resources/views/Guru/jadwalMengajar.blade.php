@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    <div class="relative z-50 p-6 mb-6 bg-white rounded-sm shadow-lg font-heading">
+    <div class="z-50 p-6 mb-6 bg-white rounded-sm shadow-lg  font-heading">
 
         <div class="mx-auto max-w-7xl">
             <!-- Top Row: Action Buttons -->

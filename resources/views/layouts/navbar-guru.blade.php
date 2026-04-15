@@ -63,7 +63,7 @@
                         <!-- Profile Picture or Avatar -->
                         @if(Auth::user()->profile_picture)
                             <img
-                                src="data:image/jpeg;base64,{{ Auth::user()->profile_picture }}"
+                                src="{{ Storage::url(Auth::user()->profile_picture) }}"
                                 alt="Foto Profil"
                                 class="object-cover w-10 h-10 rounded-full ring-2 ring-purple-100"
                             />
@@ -101,33 +101,6 @@
                     aria-label="submenu"
                     x-cloak
                 >
-                    {{-- <!-- User Info Header -->
-                    <div class="px-4 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-orange-50 rounded-t-xl">
-                        <div class="flex items-center space-x-3">
-                            @if(Auth::user()->profile_picture)
-                                <img
-                                    src="data:image/jpeg;base64,{{ Auth::user()->profile_picture }}"
-                                    alt="Foto Profil"
-                                    class="object-cover w-12 h-12 rounded-full shadow-sm ring-2 ring-white"
-                                />
-                            @else
-                                <div class="flex items-center justify-center w-12 h-12 rounded-full shadow-md bg-gradient-to-br from-purple-600 to-orange-500 ring-2 ring-white">
-                                    <span class="text-lg font-semibold text-white font-heading">
-                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                    </span>
-                                </div>
-                            @endif
-                            <div>
-                                <p class="text-sm font-semibold text-gray-900 font-heading">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-gray-600">{{ Auth::user()->email ?? 'user@example.com' }}</p>
-                                @auth
-                                    <p class="text-xs font-medium text-purple-600">
-                                        {{ Auth::user()->getRoleNames()->first() ?? 'User' }}
-                                    </p>
-                                @endauth
-                            </div>
-                        </div>
-                    </div> --}}
 
                     <!-- Menu Items -->
                     <div class="py-2">

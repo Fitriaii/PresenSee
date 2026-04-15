@@ -88,7 +88,7 @@ class PresensiController extends Controller
                 ->appends($request->query());
         }
 
-        return view('guru.presensi.index', [
+        return view('Guru.Presensi.index', [
             'presensi' => $presensi,
             'jadwal' => $jadwal,
             'mapels' => $mapels,
@@ -152,7 +152,7 @@ class PresensiController extends Controller
 
         $totalSiswa = Siswa_Kelas::where('kelas_id', $jadwal->kelas_id)->count();
 
-        return view('guru.presensi.create', [
+        return view('Guru.Presensi.create', [
             'jadwal' => $jadwal,
             'siswa' => $siswa,
             'presensi' => $presensi,
@@ -245,7 +245,7 @@ class PresensiController extends Controller
             return redirect()->route('presensi.index')->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        return view('guru.presensi.edit', [
+        return view('Guru.Presensi.edit', [
             'presensi' => $presensi,
             'siswa' => $siswa->siswa,
             'jadwal' => $jadwal,

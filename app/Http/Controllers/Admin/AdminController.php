@@ -105,7 +105,12 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email:rfc|unique:users,email',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'password' => 'required|string|min:8',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
+            ],
         ], [
             'name.required' => 'Nama wajib diisi.',
             'email.required' => 'Email wajib diisi.',
@@ -116,6 +121,7 @@ class AdminController extends Controller
             'profile_picture.image' => 'File harus berupa gambar.',
             'profile_picture.mimes' => 'Format gambar tidak valid.',
             'profile_picture.max' => 'Ukuran gambar terlalu besar. Maksimal 2MB.',
+            'password.regex' => 'Kata sandi harus mengandung setidaknya satu huruf besar, satu huruf kecil, satu angka, dan satu karakter khusus.',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -140,8 +146,9 @@ class AdminController extends Controller
             // Upload gambar
             if ($request->hasFile('profile_picture')) {
                 $file = $request->file('profile_picture');
-                $imageData = file_get_contents($file);
-                $data['profile_picture'] = base64_encode($imageData);
+                $path = $file->store('profile_picture', 'public');
+
+                $data['profile_picture'] = $path;
             }
 
             $user = User::create($data);
@@ -206,7 +213,12 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email:rfc|unique:users,email' . $admin->id,
-            'password' => 'nullable|string|min:8',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
+            ],
             'profile_picture' => 'nullable|image|max:2048', // max 2MB
         ], [
             'name.required' => 'Nama wajib diisi.',
@@ -216,6 +228,7 @@ class AdminController extends Controller
             'password.min' => 'Kata sandi minimal 8 karakter.',
             'profile_picture.image' => 'File harus berupa gambar.',
             'profile_picture.max' => 'Ukuran gambar maksimal 2MB.',
+            'password.regex' => 'Kata sandi harus mengandung setidaknya satu huruf besar, satu huruf kecil, satu angka, dan satu karakter khusus.',
         ]);
 
         try {
@@ -226,10 +239,11 @@ class AdminController extends Controller
                 $admin->password = Hash::make($request->password);
             }
 
-            if ($request->hasFile('profile_picture') && $request->file('profile_picture')->isValid()) {
+            if ($request->hasFile('profile_picture')) {
                 $file = $request->file('profile_picture');
-                $imageData = file_get_contents($file->getRealPath());
-                $admin->profile_picture = base64_encode($imageData);
+                $path = $file->store('profile_picture', 'public');
+
+                $admin->profile_picture = $path;
             }
 
             $admin->save();

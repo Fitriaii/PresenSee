@@ -43,7 +43,7 @@
                     <!-- Profile Picture -->
                     <div class="flex-shrink-0">
                         @if ($admin->profile_picture)
-                            <img src="data:image/jpeg;base64,{{ $admin->profile_picture }}"
+                            <img src="{{ Storage::url($admin->profile_picture) }}"
                                 alt="Foto Profil Admin"
                                 class="object-cover w-32 h-32 border-4 border-white rounded-full shadow-lg">
                         @else

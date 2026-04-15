@@ -345,7 +345,7 @@ class SiswaController extends Controller
     public function showCaptureForm(string $id)
     {
         $siswa = Siswa::findOrFail($id);
-        return view('admin.siswa.facetrain', compact('siswa'));
+        return view('Admin.Siswa.facetrain', compact('siswa'));
     }
 
     public function captureAndTrain(Request $request, $id)

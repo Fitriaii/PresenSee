@@ -22,7 +22,7 @@
 
         <!-- Form -->
         <form id="guruForm" class="space-y-4" method="POST" action="{{ route('profileGuru.update', $guru) }}" enctype="multipart/form-data">
-            @method('PATCH')
+            {{-- #@method('PATCH') --}}
             @csrf
             <!-- Personal Information Section -->
             <div class="space-y-6">
@@ -113,7 +113,7 @@
                                 <div class="relative flex items-center justify-center w-16 h-16 overflow-hidden bg-gray-100 border-2 border-gray-300 border-dashed rounded-lg">
                                   <!-- Jika ada preview gambar -->
                                   @if(isset($guru) && $guru->user->profile_picture)
-                                    <img src="data:image/jpeg;base64,{{ $guru->user->profile_picture }}" alt="Preview Foto Profil" class="object-cover w-full h-full rounded-lg" />
+                                    <img src="{{ asset('storage/' . $guru->user->profile_picture) }}" alt="Preview Foto Profil" class="object-cover w-full h-full rounded-lg" />
                                   @else
                                     <!-- Icon Placeholder -->
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -63,7 +63,7 @@
                         <!-- Profile Picture or Avatar -->
                         @if(Auth::user()->profile_picture)
                             <img
-                                src="data:image/jpeg;base64,{{ Auth::user()->profile_picture }}"
+                                src="{{ Storage::url(Auth::user()->profile_picture) }}"
                                 alt="Foto Profil"
                                 class="object-cover w-10 h-10 rounded-full ring-2 ring-purple-100"
                             />

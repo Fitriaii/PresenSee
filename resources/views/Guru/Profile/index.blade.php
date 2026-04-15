@@ -42,7 +42,7 @@
                     <!-- Profile Picture -->
                     <div class="flex-shrink-0">
                         @if ($guru->user->profile_picture)
-                            <img src="data:image/jpeg;base64,{{ $guru->user->profile_picture }}"
+                            <img src="{{ Storage::url($guru->user->profile_picture) }}"
                                 alt="Foto Profil Admin"
                                 class="object-cover w-32 h-32 border-4 border-white rounded-full shadow-lg">
                         @else

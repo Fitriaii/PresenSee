@@ -106,7 +106,12 @@ class GuruController extends Controller
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
             'email' => 'required|email:rfc,dns|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
+            ],
             'nip' => 'required|string|max:255|unique:guru,nip',
             'alamat' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
@@ -123,6 +128,7 @@ class GuruController extends Controller
 
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
+            'password.regex' => 'Kata sandi harus mengandung setidaknya satu huruf besar, satu huruf kecil, satu angka, dan satu karakter khusus.',
 
             'nip.required' => 'NIP wajib diisi.',
             'nip.unique' => 'NIP sudah digunakan.',
@@ -251,7 +257,12 @@ class GuruController extends Controller
             'no_hp' => 'required|string|max:15',
             'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
             'status_keaktifan' => 'required|in:Aktif,Tidak Aktif',
-            'password' => 'nullable|string|min:8',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
+            ],
         ], [
             'nama_guru.required' => 'Nama guru wajib diisi.',
             'nama_guru.max' => 'Nama guru maksimal 255 karakter.',
@@ -263,6 +274,7 @@ class GuruController extends Controller
 
             'password.required' => 'Kata sandi wajib diisi.',
             'password.min' => 'Kata sandi minimal 8 karakter.',
+            'password.regex' => 'Kata sandi harus mengandung setidaknya satu huruf besar, satu huruf kecil, satu angka, dan satu karakter khusus.',
 
             'nip.required' => 'NIP wajib diisi.',
             'nip.unique' => 'NIP sudah digunakan.',

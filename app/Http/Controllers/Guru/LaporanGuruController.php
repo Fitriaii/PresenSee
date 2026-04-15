@@ -143,7 +143,7 @@ class LaporanGuruController extends Controller
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('guru.laporan.laporanGuru', [
+        return view('Guru.Laporan.laporanGuru', [
             'user' => $user,
             'data' => $rekapPerSiswa,
             'rekapPerSiswa' => $rekapPerSiswa,
@@ -193,7 +193,7 @@ class LaporanGuruController extends Controller
         if ($request->filled('kelas_id')) {
             $query->where('kelas.id', $request->kelas_id);
         }
-        
+
         // Validasi wajib: mapel harus dipilih
         if (!$request->filled('mapel_id')) {
             return redirect()->back()->with([
@@ -292,7 +292,7 @@ class LaporanGuruController extends Controller
         ];
 
         // Buat PDF
-        $pdf = Pdf::loadView('guru.laporan.laporanpdf', [
+        $pdf = Pdf::loadView('Guru.Laporan.laporanpdf', [
             'rekap' => $rekapPerSiswa,
             'presensi' => $presensi,
             'filter' => $filter,

@@ -71,7 +71,7 @@ class KelasController extends Controller
         // Paginate hasil akhir (sudah termasuk jumlah siswa per kelas)
         $room = $kelasQuery->paginate(10)->appends($request->all());
 
-        return view('admin.akademik.kelas.index', compact('user', 'room'))
+        return view('Admin.Akademik.Kelas.index', compact('user', 'room'))
             ->with('search', $request->search)
             ->with('jenis_kelas', $request->jenis_kelas)
             ->with('tingkatan_kelas', $request->tingkatan_kelas);
@@ -85,7 +85,7 @@ class KelasController extends Controller
     public function create()
     {
         $guruList = Guru::all();
-        return view('admin.akademik.kelas.create', compact('guruList'));
+        return view('Admin.Akademik.Kelas.create', compact('guruList'));
     }
 
     /**
@@ -133,7 +133,7 @@ class KelasController extends Controller
     public function show(Kelas $room)
     {
         // Menampilkan detail kelas
-        return view('admin.akademik.kelas.show', compact('room'));
+        return view('Admin.Akademik.Kelas.show', compact('room'));
     }
 
     /**
@@ -142,7 +142,7 @@ class KelasController extends Controller
     public function edit(Kelas $room)
     {
         $guruList = Guru::all();
-        return view('admin.akademik.kelas.edit', [
+        return view('Admin.Akademik.Kelas.edit', [
             'room' => $room,
             'guruList' => $guruList,
             'selectedGuru' => $room->guru_id,

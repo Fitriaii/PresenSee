@@ -118,11 +118,11 @@ class ProfileGuruController extends Controller
         DB::beginTransaction();
 
         try {
-            // Simpan gambar sebagai base64
-            if ($request->hasFile('profile_picture') && $request->file('profile_picture')->isValid()) {
+            if ($request->hasFile('profile_picture')) {
                 $file = $request->file('profile_picture');
-                $imageData = file_get_contents($file->getRealPath());
-                $user->profile_picture = base64_encode($imageData);
+                $path = $file->store('profile_picture', 'public');
+
+                $user->profile_picture = $path;
             }
 
             // Update data user

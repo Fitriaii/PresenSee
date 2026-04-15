@@ -66,7 +66,7 @@ class TahunAjaranController extends Controller
             ->pluck('tahun');
 
         $activeCount = TahunAjaran::where('status', 'Aktif')->count();
-        return view('admin.akademik.tajaran.index', compact('tahunAjaran', 'user', 'tahunList', 'activeCount'));
+        return view('Admin.Akademik.TAjaran.index', compact('tahunAjaran', 'user', 'tahunList', 'activeCount'));
     }
 
 
@@ -76,7 +76,7 @@ class TahunAjaranController extends Controller
     public function create()
     {
         $ta = TahunAjaran::all();
-        return view('admin.akademik.tajaran.create', compact('ta'));
+        return view('Admin.Akademik.TAjaran.create', compact('ta'));
     }
 
     /**
@@ -133,7 +133,7 @@ class TahunAjaranController extends Controller
     public function show(TahunAjaran $tahunajaran)
     {
         // Cek apakah pengguna adalah admin
-        return view('admin.akademik.tajaran.show', compact('tahunajaran'));
+        return view('Admin.Akademik.TAjaran.show', compact('tahunajaran'));
     }
 
 
@@ -155,7 +155,7 @@ class TahunAjaranController extends Controller
             ]);
         }
 
-        return view('admin.akademik.tajaran.edit', compact('ta'));
+        return view('Admin.Akademik.TAjaran.edit', compact('ta'));
     }
 
     /**

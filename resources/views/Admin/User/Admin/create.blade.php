@@ -121,7 +121,7 @@
                                     <p class="mt-1 text-xs text-blue-600">File sebelumnya: {{ old('profile_picture') }}</p>
                                 @elseif(isset($admin) && $admin->profile_picture)
                                     <div class="mt-2">
-                                        <img src="data:image/jpeg;base64,{{ $admin->profile_picture }}" alt="Preview Foto Profil" class="object-cover w-24 h-24 border border-gray-300 rounded-full">
+                                        <img src="{{ Storage::url($admin->profile_picture) }}" alt="Preview Foto Profil" class="object-cover w-24 h-24 border border-gray-300 rounded-full">
                                     </div>
                                 @endif
                             </div>
