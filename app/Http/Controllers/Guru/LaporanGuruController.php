@@ -41,7 +41,7 @@ class LaporanGuruController extends Controller
             ])
             ->whereHas('jadwal.mapel', fn($q) => $q->where('guru_id', $guru->id));
 
-        // Filter
+
         if ($tahunAjaranId = $request->input('tahun_ajaran_id')) {
             $query->whereHas('siswa_kelas.tahunAjaran', fn($q) => $q->where('id', $tahunAjaranId));
         }
@@ -100,10 +100,10 @@ class LaporanGuruController extends Controller
             });
         }
 
-        // Ambil semua data presensi terlebih dahulu
+
         $allPresensi = $query->orderBy('waktu_presensi', 'desc')->get();
 
-        // Rekap presensi per siswa
+
         $rekapCollection = $allPresensi->groupBy('siswa_kelas_id')->map(function ($presensis) {
             $siswaKelas = $presensis->first()->siswa_kelas;
             $siswa = $siswaKelas->siswa ?? null;
@@ -130,7 +130,7 @@ class LaporanGuruController extends Controller
             ];
         })->values();
 
-        // Paginate rekap per siswa
+
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 10;
         $currentItems = $rekapCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
@@ -157,7 +157,7 @@ class LaporanGuruController extends Controller
     {
         $user = $request->user();
 
-        // 🔒 Pastikan hanya guru yang bisa akses
+
         if (!$user || !$user->hasRole('guru')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -166,10 +166,10 @@ class LaporanGuruController extends Controller
             ]);
         }
 
-        // Ambil data guru dari user
+
         $guru = Guru::where('user_id', $user->id)->firstOrFail();
 
-        // Ambil presensi yang hanya sesuai jadwal guru ini
+
         $query = Presensi::with([
             'siswa_kelas.siswa',
             'siswa_kelas.kelas',
@@ -185,7 +185,7 @@ class LaporanGuruController extends Controller
         ->join('siswa_kelas', 'presensi.siswa_kelas_id', '=', 'siswa_kelas.id')
         ->select('presensi.*');
 
-        // Filter dinamis
+
         if ($request->filled('tahun_ajaran_id')) {
             $query->where('siswa_kelas.tahun_ajaran_id', $request->tahun_ajaran_id);
         }
@@ -194,7 +194,7 @@ class LaporanGuruController extends Controller
             $query->where('kelas.id', $request->kelas_id);
         }
 
-        // Validasi wajib: mapel harus dipilih
+
         if (!$request->filled('mapel_id')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -221,7 +221,7 @@ class LaporanGuruController extends Controller
             });
         }
 
-        // Filter periode
+
         switch ($request->periode) {
             case 'harian':
                 if ($request->filled('tanggal')) {
@@ -248,10 +248,10 @@ class LaporanGuruController extends Controller
                 break;
         }
 
-        // Ambil data
+
         $presensi = $query->orderBy('waktu_presensi', 'asc')->get();
 
-        // Rekap per siswa
+
         $rekapPerSiswa = $presensi->groupBy('siswa_kelas_id')->map(function ($presensis) {
             $siswaKelas = $presensis->first()->siswa_kelas;
             $siswa = $siswaKelas->siswa ?? null;
@@ -291,7 +291,7 @@ class LaporanGuruController extends Controller
             'mapel' => Mapel::find($request->mapel_id)?->nama_mapel ?? null,
         ];
 
-        // Buat PDF
+
         $pdf = Pdf::loadView('Guru.Laporan.laporanpdf', [
             'rekap' => $rekapPerSiswa,
             'presensi' => $presensi,
@@ -304,7 +304,7 @@ class LaporanGuruController extends Controller
         $periode = $filter['periode'] ?? 'semua';
         $tanggal = now()->format('Ymd-His');
 
-        // Buat nama file
+
         $filename = "presensi_{$kelas}_{$mapel}_{$periode}_{$tahun}_{$tanggal}.pdf";
         return $pdf->download($filename);
     }
@@ -314,7 +314,7 @@ class LaporanGuruController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -322,7 +322,7 @@ class LaporanGuruController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -330,7 +330,7 @@ class LaporanGuruController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
@@ -338,7 +338,7 @@ class LaporanGuruController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
@@ -346,7 +346,7 @@ class LaporanGuruController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
     /**
@@ -354,6 +354,6 @@ class LaporanGuruController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

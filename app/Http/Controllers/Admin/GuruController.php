@@ -19,7 +19,7 @@ class GuruController extends Controller
     {
         $user = $request->user();
 
-        // Pastikan hanya admin yang boleh akses
+
         if (!$user || !$user->hasRole('admin')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -28,10 +28,10 @@ class GuruController extends Controller
             ]);
         }
 
-        // Query guru dengan relasi user
+
         $query = Guru::with('user');
 
-        // Filter by search (cari di user terkait nama/email)
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('user', function ($q) use ($search) {
@@ -41,16 +41,18 @@ class GuruController extends Controller
             });
         }
 
-        // Filter by status is_logged_in (berdasarkan relasi user)
+
         if ($request->filled('status') && $request->status !== '') {
-            $status = (int) $request->status; // 1 or 0
+            $status = (int) $request->status;
             $query->whereHas('user', function ($q) use ($status) {
                 $q->where('is_logged_in', $status);
             });
         }
 
-        // Sorting berdasarkan request param
-        switch ($request->sort) {
+
+        $sort = $request->sort ?? 'name_asc';
+
+        switch ($sort) {
             case 'name_asc':
                 $query->whereHas('user')->orderBy(User::select('name')->whereColumn('users.id', 'guru.user_id'), 'asc');
                 break;
@@ -64,19 +66,16 @@ class GuruController extends Controller
                 $query->orderBy('created_at', 'desc');
                 break;
             case 'last_login_desc':
-                // Sorting by related user's last_login_at
+
                 $query->whereHas('user')->orderBy(User::select('last_login_at')->whereColumn('users.id', 'guru.user_id'), 'desc');
-                break;
-            default:
-                $query->orderBy('created_at', 'desc');
                 break;
         }
 
-        // Pagination
+
         $perPage = $request->perPage ?? 10;
         $userGuru = $query->paginate($perPage);
 
-        // Tambahkan atribut tambahan di setiap model guru
+
         $userGuru->getCollection()->transform(function ($guru) use ($user) {
             $guru->is_logged_in = $guru->user && $guru->user->id === $user->id ? 1 : 0;
             if ($guru->user) {
@@ -160,7 +159,7 @@ class GuruController extends Controller
                 ])->withInput();
             };
 
-            // Simpan ke tabel users
+
             $user = new User();
             $user->name = $validated['nama_guru'];
             $user->email = $validated['email'];
@@ -168,10 +167,10 @@ class GuruController extends Controller
             $user->email_verified_at = null;
             $user->save();
 
-            // Berikan role guru
+
             $user->assignRole('guru');
 
-            // Simpan ke tabel guru
+
             $guru = new Guru();
             $guru->user_id = $user->id;
             $guru->nama_guru = $validated['nama_guru'];
@@ -251,8 +250,8 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
-            'email' => "required|email:rfc,dns|unique:users,email,{$guru->user->id}", // Abaikan email user yang sedang diedit
-            'nip' => 'required|string|max:255|unique:guru,nip,' . $guru->id, // Abaikan NIP guru yang sedang diedit
+            'email' => "required|email:rfc,dns|unique:users,email,{$guru->user->id}",
+            'nip' => 'required|string|max:255|unique:guru,nip,' . $guru->id,
             'alamat' => 'required|string|max:255',
             'no_hp' => 'required|string|max:15',
             'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
@@ -297,9 +296,9 @@ class GuruController extends Controller
 
         try {
             $guru = Guru::findOrFail($guru->id);
-            $user = $guru->user; // Relasi ke user dari model guru
+            $user = $guru->user;
             $user->name = $validated['nama_guru'];
-            $user->email = $validated['email']; // Email tetap sama jika tidak diubah
+            $user->email = $validated['email'];
             if (!empty($validated['password'])) {
                 $user->password = Hash::make($validated['password']);
             }
@@ -335,12 +334,12 @@ class GuruController extends Controller
     public function destroy(Guru $guru)
     {
         try {
-            // Hapus relasi user jika ada
+
             if ($guru->user) {
                 $guru->user->delete();
             }
 
-            // Hapus data guru
+
             $guru->delete();
 
             return redirect()->route('guru.index')->with([

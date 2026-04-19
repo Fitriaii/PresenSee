@@ -210,8 +210,6 @@
 
 
 <script>
-
-    // Live search debounce
     const searchInput = document.getElementById('searchInput');
     const searchForm = document.getElementById('searchForm');
     let typingTimer;
@@ -227,8 +225,6 @@
 
         searchInput.addEventListener('keydown', () => clearTimeout(typingTimer));
     }
-
-    // Auto-submit filter form saat filter berubah
     const filterForm = document.getElementById('filterForm');
     ['jenis_kelas', 'tingkatan_kelas', 'sort'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', () => {

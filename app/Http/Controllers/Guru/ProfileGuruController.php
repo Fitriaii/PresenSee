@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileGuruController extends Controller
 {
@@ -19,7 +18,7 @@ class ProfileGuruController extends Controller
     {
         $user = $request->user();
 
-        // Pastikan user adalah guru
+
         if (!$user || !$user->hasRole('guru')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -28,16 +27,16 @@ class ProfileGuruController extends Controller
             ]);
         }
 
-        // Ambil data guru berdasarkan user yang login
+
         $guru = Guru::with('mapel')->where('user_id', $user->id)->firstOrFail();
 
-        // Tambahkan informasi tambahan
+
         $guru->email = $user->email;
         $guru->roles = $user->getRoleNames();
         $guru->is_logged_in = true;
         $guru->profile_picture;
 
-        return view('guru.profile.index', compact('guru', 'user'));
+        return view('Guru.Profile.index', compact('guru', 'user'));
     }
 
 
@@ -46,7 +45,7 @@ class ProfileGuruController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -54,7 +53,7 @@ class ProfileGuruController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -62,7 +61,7 @@ class ProfileGuruController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
@@ -82,7 +81,7 @@ class ProfileGuruController extends Controller
 
         $guru = Guru::where('user_id', $user->id)->firstOrFail();
 
-        return view('guru.profile.edit', compact('guru', 'user'));
+        return view('Guru.Profile.edit', compact('guru', 'user'));
     }
 
 
@@ -125,7 +124,7 @@ class ProfileGuruController extends Controller
                 $user->profile_picture = $path;
             }
 
-            // Update data user
+
             $user->name = $validated['nama_guru'];
             $user->email = $validated['email'];
             if (!empty($validated['password'])) {
@@ -133,7 +132,7 @@ class ProfileGuruController extends Controller
             }
             $user->save();
 
-            // Update data guru
+
             $guru->nama_guru = $validated['nama_guru'];
             $guru->nip = $validated['nip'];
             $guru->alamat = $validated['alamat'];
@@ -167,6 +166,6 @@ class ProfileGuruController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

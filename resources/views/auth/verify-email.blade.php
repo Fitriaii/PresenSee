@@ -46,11 +46,13 @@
         </p>
 
         <!-- Success Alert -->
-        @if (session('status') == 'verification-link-sent')
-            <div class="p-3 mt-4 text-sm text-green-700 bg-green-100 border border-green-200 rounded-lg text-center">
-                Link verifikasi berhasil dikirim ulang.
-            </div>
-        @endif
+        @session('status')
+            @if ($value === 'verification-link-sent')
+                <div class="p-3 mt-4 text-sm text-center text-green-700 bg-green-100 border border-green-200 rounded-lg">
+                    Link verifikasi berhasil dikirim ulang.
+                </div>
+            @endif
+        @endsession
 
         <!-- Button -->
         <form method="POST" action="{{ route('verification.send') }}" class="mt-6">

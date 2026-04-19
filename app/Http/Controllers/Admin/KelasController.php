@@ -16,7 +16,7 @@ class KelasController extends Controller
     {
         $user = $request->user();
 
-        // Hanya admin yang diizinkan
+
         if (!$user || !$user->hasRole('admin')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -25,10 +25,10 @@ class KelasController extends Controller
             ]);
         }
 
-        // Query kelas dengan relasi siswa_kelas dihitung
+
         $kelasQuery = Kelas::withCount('siswa_kelas');
 
-        // Filter pencarian
+
         if ($request->filled('search')) {
             $kelasQuery->where(function ($query) use ($request) {
                 $query->where('nama_kelas', 'like', '%' . $request->search . '%')
@@ -39,18 +39,19 @@ class KelasController extends Controller
             });
         }
 
-        // Filter berdasarkan jenis_kelas
+
         if ($request->filled('jenis_kelas')) {
             $kelasQuery->where('jenis_kelas', $request->jenis_kelas);
         }
 
-        // Filter berdasarkan tingkatan_kelas
+
         if ($request->filled('tingkatan_kelas')) {
             $kelasQuery->where('tingkatan_kelas', $request->tingkatan_kelas);
         }
 
-        // Sorting
-        switch ($request->sort) {
+
+        $sort = $request->sort ?? 'nama_kelas_asc';
+        switch ($sort) {
             case 'nama_kelas_asc':
                 $kelasQuery->orderBy('nama_kelas', 'asc');
                 break;
@@ -63,12 +64,9 @@ class KelasController extends Controller
             case 'created_desc':
                 $kelasQuery->orderBy('created_at', 'desc');
                 break;
-            default:
-                $kelasQuery->latest();
-                break;
         }
 
-        // Paginate hasil akhir (sudah termasuk jumlah siswa per kelas)
+
         $room = $kelasQuery->paginate(10)->appends($request->all());
 
         return view('Admin.Akademik.Kelas.index', compact('user', 'room'))
@@ -132,7 +130,7 @@ class KelasController extends Controller
      */
     public function show(Kelas $room)
     {
-        // Menampilkan detail kelas
+
         return view('Admin.Akademik.Kelas.show', compact('room'));
     }
 
@@ -156,12 +154,12 @@ class KelasController extends Controller
     {
         $request->validate([
             'nama_kelas' => 'required|string|max:255',
-            'jenis_kelas' => 'required|string|max:255', // pengecualian untuk kelas yang sedang diupdate
+            'jenis_kelas' => 'required|string|max:255',
             'tingkatan_kelas' => 'required|string|max:255',
             'guru' => 'required|exists:guru,id',
         ], [
             'nama_kelas.required' => 'Nama kelas wajib diisi.',
-            // 'jenis_kelas.required' => 'Jenis kelas wajib diisi.',,
+
             'tingkatan_kelas.required' => 'Tingkatan kelas wajib diisi.',
             'guru.required' => 'Guru pengampu wajib dipilih.',
             'guru.exists' => 'Guru yang dipilih tidak ditemukan.',
@@ -172,7 +170,7 @@ class KelasController extends Controller
             $room->nama_kelas = $request->nama_kelas;
             $room->jenis_kelas = $request->jenis_kelas;
             $room->tingkatan_kelas = $request->tingkatan_kelas;
-            $room->guru_id = $guru->id;  // Menggunakan ID guru, bukan nama_guru
+            $room->guru_id = $guru->id;
             $room->save();
             return redirect()->route('room.index')->with([
                 'status' => 'success',

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TahunAjaranController extends Controller
 {
@@ -26,30 +25,25 @@ class TahunAjaranController extends Controller
 
         $tahunAjaranQuery = TahunAjaran::query();
 
-        // Sorting
-        switch ($request->sort) {
+
+        $sort = $request->sort ?? 'created_asc';
+        switch ($sort) {
             case 'created_asc':
                 $tahunAjaranQuery->orderBy('created_at', 'asc');
                 break;
             case 'created_desc':
                 $tahunAjaranQuery->orderBy('created_at', 'desc');
                 break;
-            default:
-                $tahunAjaranQuery->latest();
-                break;
         }
 
-        // Filter berdasarkan status
         if ($request->filled('status')) {
             $tahunAjaranQuery->where('status', $request->status);
         }
 
-        // Filter berdasarkan tahun_mulai dari kolom tahun_ajaran (format: 2024/2025)
         if ($request->filled('tahun_mulai')) {
             $tahunAjaranQuery->whereRaw('SUBSTRING_INDEX(tahun_ajaran, "/", 1) = ?', [$request->tahun_mulai]);
         }
 
-        // Pencarian
         if ($request->filled('search')) {
             $tahunAjaranQuery->where(function ($query) use ($request) {
                 $query->where('tahun_ajaran', 'like', '%' . $request->search . '%')
@@ -60,7 +54,7 @@ class TahunAjaranController extends Controller
         $tahunAjaran = $tahunAjaranQuery->paginate(10);
         $tahunAjaran->appends($request->only(['status', 'tahun_mulai', 'search', 'sort']));
 
-        // Ambil list tahun_mulai dari tahun_ajaran
+
         $tahunList = TahunAjaran::selectRaw('DISTINCT SUBSTRING_INDEX(tahun_ajaran, "/", 1) AS tahun')
             ->orderBy('tahun', 'desc')
             ->pluck('tahun');
@@ -96,7 +90,7 @@ class TahunAjaranController extends Controller
         try {
             $tahun_ajaran = $request->tahun_mulai . '/' . $request->tahun_akhir;
 
-            // Validasi unik manual karena tahun_ajaran gabungan dari 2 input
+
             $exists = TahunAjaran::where('tahun_ajaran', $tahun_ajaran)->exists();
             if ($exists) {
                 return redirect()->back()->withInput()->with([
@@ -105,10 +99,10 @@ class TahunAjaranController extends Controller
                 ]);
             }
 
-            // Set semua tahun ajaran lain menjadi Tidak Aktif
+
             TahunAjaran::where('status', 'Aktif')->update(['status' => 'Tidak Aktif']);
 
-            // Simpan tahun ajaran baru sebagai Aktif
+
             $tahunajaran = new TahunAjaran();
             $tahunajaran->tahun_ajaran = $tahun_ajaran;
             $tahunajaran->status = 'Aktif';
@@ -132,7 +126,7 @@ class TahunAjaranController extends Controller
      */
     public function show(TahunAjaran $tahunajaran)
     {
-        // Cek apakah pengguna adalah admin
+
         return view('Admin.Akademik.TAjaran.show', compact('tahunajaran'));
     }
 
@@ -175,7 +169,7 @@ class TahunAjaranController extends Controller
         try {
             $tahun_ajaran = $request->tahun_mulai . '/' . $request->tahun_akhir;
 
-            // Cek apakah kombinasi tahun ajaran sudah digunakan oleh entri lain
+
             $exists = TahunAjaran::where('tahun_ajaran', $tahun_ajaran)
                 ->where('id', '!=', $tahunajaran->id)
                 ->exists();
@@ -188,7 +182,7 @@ class TahunAjaranController extends Controller
             }
 
             $tahunajaran->tahun_ajaran = $tahun_ajaran;
-            // Status tidak diubah saat update
+
             $tahunajaran->save();
 
             return redirect()->route('tahunajaran.index')->with([
@@ -210,16 +204,16 @@ class TahunAjaranController extends Controller
     public function destroy(TahunAjaran $tahunajaran)
     {
         try {
-            // Hapus tahun ajaran
+
             $tahunajaran->delete();
 
-            // Menggunakan SweetAlert untuk sukses
+
             return redirect()->route('tahunajaran.index')->with([
                 'status' => 'success',
                 'message' => 'Tahun ajaran berhasil dihapus.'
             ]);
         } catch (\Exception $e) {
-            // Menggunakan SweetAlert untuk error
+
             return redirect()->route('tahunajaran.index')->with([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat menghapus tahun ajaran.'
@@ -233,13 +227,13 @@ class TahunAjaranController extends Controller
         $ta = TahunAjaran::findOrFail($id);
 
         if ($ta->status === 'Tidak Aktif') {
-            // Nonaktifkan semua dulu
+
             TahunAjaran::where('status', 'Aktif')->update(['status' => 'Tidak Aktif']);
 
-            // Aktifkan tahun ajaran yang dipilih
+
             $ta->status = 'Aktif';
         } else {
-            // Nonaktifkan tahun ajaran ini
+
             $ta->status = 'Tidak Aktif';
         }
 

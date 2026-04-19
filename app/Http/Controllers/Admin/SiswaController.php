@@ -39,7 +39,7 @@ class SiswaController extends Controller
             }
         ]);
 
-        // 🔍 Search: nama, NIS, atau nama kelas
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_siswa', 'like', '%' . $request->search . '%')
@@ -54,28 +54,28 @@ class SiswaController extends Controller
             });
         }
 
-        // 🎯 Filter: Jenis Kelas
+
         if ($request->filled('jenis_kelas')) {
             $query->whereHas('siswa_kelas.kelas', function ($q) use ($request) {
                 $q->where('jenis_kelas', $request->jenis_kelas);
             });
         }
 
-        // 🎯 Filter: Tahun Ajaran
+
         if ($request->filled('tahun_ajaran')) {
             $query->whereHas('siswa_kelas', function ($q) use ($request) {
-                $q->where('tahun_ajaran_id', $request->tahun_ajaran); // perbaikan: tahun_ajaran, bukan tahun_ajaran_id
+                $q->where('tahun_ajaran_id', $request->tahun_ajaran);
             });
         }
 
-        // 🎯 Filter: Kelas
+
         if ($request->filled('kelas')) {
             $query->whereHas('siswa_kelas', function ($q) use ($request) {
                 $q->where('kelas_id', $request->kelas);
             });
         }
 
-        // 🎯 Filter: Ketersediaan Foto
+
         if ($request->filled('filter_foto')) {
             if ($request->filter_foto === 'tersedia') {
                 $query->whereNotNull('foto_siswa')->where('foto_siswa', '!=', '[]');
@@ -86,8 +86,9 @@ class SiswaController extends Controller
             }
         }
 
-        // ↕️ Sorting
-        switch ($request->sort) {
+
+        $sort = $request->sort ?? 'nama_siswa_asc';
+        switch ($sort) {
             case 'nama_siswa_asc':
                 $query->orderBy('nama_siswa', 'asc');
                 break;
@@ -100,14 +101,11 @@ class SiswaController extends Controller
             case 'created_desc':
                 $query->orderBy('created_at', 'desc');
                 break;
-            default:
-                $query->latest(); // default: created_at desc
-                break;
         }
 
         $siswa = $query->paginate(10)->appends(request()->query());
 
-        // Ambil data referensi dropdown
+
         $semuaTahunAjaran = TahunAjaran::all();
         $semuaKelas = Kelas::all();
 
@@ -146,14 +144,14 @@ class SiswaController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Simpan data siswa
+
             $siswa = new Siswa();
             $siswa->nama_siswa = $request->nama_siswa;
             $siswa->nis = $request->nis;
             $siswa->jenis_kelamin = $request->jenis_kelamin;
             $siswa->save();
 
-            // 2. Simpan ke relasi siswa_kelas
+
             $siswaKelas = new Siswa_Kelas();
             $siswaKelas->siswa_id = $siswa->id;
             $siswaKelas->kelas_id = $request->kelas_id;
@@ -184,11 +182,11 @@ class SiswaController extends Controller
     public function show(Siswa $siswa)
     {
         $siswa = Siswa::with([
-            'siswa_kelas.kelas',  // Memuat relasi kelas
-            'siswa_kelas.tahunAjaran'  // Memuat relasi tahun ajaran
+            'siswa_kelas.kelas',
+            'siswa_kelas.tahunAjaran'
         ])->findOrFail($siswa->id);
 
-        // Jika siswa_kelas adalah koleksi, pilih entitas pertama (asumsi hanya ada satu entitas yang relevan)
+
         $siswaKelas = $siswa->siswa_kelas->first();
 
         return view('Admin.Siswa.show', compact('siswa', 'siswaKelas'));
@@ -238,13 +236,13 @@ class SiswaController extends Controller
         try {
             DB::beginTransaction();
 
-            // Update data siswa
+
             $siswa->nama_siswa = $request->nama_siswa;
             $siswa->nis = $request->nis;
             $siswa->jenis_kelamin = $request->jenis_kelamin;
             $siswa->save();
 
-            // Update relasi siswa_kelas
+
             $siswaKelas = $siswa->siswa_kelas()->first();
             if ($siswaKelas) {
                 $siswaKelas->kelas_id = $request->kelas_id;
@@ -278,7 +276,7 @@ class SiswaController extends Controller
         try {
             $nis = $siswa->nis;
 
-            // Ambil kelas aktif
+
             $siswaKelas = Siswa_Kelas::where('siswa_id', $siswa->id)->latest()->first();
 
             if (!$siswaKelas || !$siswaKelas->kelas) {
@@ -297,7 +295,7 @@ class SiswaController extends Controller
                 $client = new Client([
                     'base_uri' => rtrim(config('services.facerec.url'), '/') . '/',
                     'timeout' => 10,
-                    'http_errors' => false, // biar tidak throw exception
+                    'http_errors' => false,
                 ]);
 
                 $response = $client->post('api/face-clear', [
@@ -359,7 +357,7 @@ class SiswaController extends Controller
 
         $nis = $siswa->nis;
 
-        // Ambil kelas
+
         $siswaKelas = Siswa_Kelas::where('siswa_id', $siswa->id)->latest()->first();
 
         if (!$siswaKelas || !$siswaKelas->kelas) {

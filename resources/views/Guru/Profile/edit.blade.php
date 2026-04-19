@@ -22,7 +22,7 @@
 
         <!-- Form -->
         <form id="guruForm" class="space-y-4" method="POST" action="{{ route('profileGuru.update', $guru) }}" enctype="multipart/form-data">
-            {{-- #@method('PATCH') --}}
+            @method('PATCH')
             @csrf
             <!-- Personal Information Section -->
             <div class="space-y-6">

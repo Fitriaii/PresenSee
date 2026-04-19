@@ -264,5 +264,26 @@
         });
     }
 </script>
+@if (session('status') === 'success' && session('message'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: @json(session('message')),
+            showConfirmButton: false,
+            timer: 2000
+        });
+    </script>
+@endif
 
+@if (session('status') === 'error' && session('message'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: @json(session('message')),
+            showConfirmButton: true
+        });
+    </script>
+@endif
 @endsection

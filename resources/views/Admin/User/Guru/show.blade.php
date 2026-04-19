@@ -44,8 +44,8 @@
                     <!-- Profile Picture -->
                     <div class="flex-shrink-0">
                         @if ($guru->user->profile_picture)
-                            <img src="src="{{ Storage::url($guru->user->profile_picture) }}"
-                                alt="Foto Profil Admin"
+                            <img src="{{ Storage::url($guru->user->profile_picture) }}"
+                                alt="Foto Profil Guru"
                                 class="object-cover w-32 h-32 border-4 border-white rounded-full shadow-lg">
                         @else
                             <div class="flex items-center justify-center w-32 h-32 text-4xl font-bold text-white border-4 border-white rounded-full shadow-lg bg-gradient-to-br from-purple-500 to-indigo-600">

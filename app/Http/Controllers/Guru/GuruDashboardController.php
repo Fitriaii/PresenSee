@@ -8,14 +8,11 @@ use App\Models\Jadwal;
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Presensi;
-use App\Models\Siswa;
 use App\Models\Siswa_Kelas;
 use Carbon\Carbon;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class GuruDashboardController extends Controller
 {
@@ -35,36 +32,36 @@ class GuruDashboardController extends Controller
         $hariNama = ucfirst(Carbon::now()->locale('id')->isoFormat('dddd'));
 
         $guru = Guru::where('user_id', $user->id)->first();
-        // 1. Ambil ID mapel yang diampu guru
+
         $mapelIds = Mapel::where('guru_id', $guru->id)->pluck('id');
 
-        // 2. Ambil semua kelas_id dari jadwal yang berkaitan
+
         $kelasIds = Jadwal::whereIn('mapel_id', $mapelIds)->pluck('kelas_id')->unique();
 
-        // 3. Hitung jumlah kelas diampu
+
         $jumlahKelasDiampu = $kelasIds->count();
 
-        // 4. Hitung kelas aktif hari ini
+
         $kelasAktifHariIni = Jadwal::where('hari', $hariNama)
             ->whereIn('mapel_id', $mapelIds)
             ->pluck('kelas_id')
             ->unique()
             ->count();
 
-        // 5. Total siswa yang diajar guru ini
+
         $totalSiswaDiampu = Siswa_Kelas::whereIn('kelas_id', $kelasIds)->count();
 
-        // 6. Jadwal hari ini
+
         $jadwalHariIni = Jadwal::where('hari', $hariNama)
         ->whereIn('mapel_id', $mapelIds)
         ->orderBy('jam_mulai')
         ->get();
 
-        // Ambil ID-nya sebagai koleksi
+
         $jadwalIdsHariIni = $jadwalHariIni->pluck('id');
         $jumlahJadwalHariIni = $jadwalHariIni->count();
 
-        // 7. Presensi hari ini
+
         $presensiHariIni = Presensi::whereIn('jadwal_id', $jadwalIdsHariIni)
             ->whereDate('waktu_presensi', $hariIni)
             ->get();
@@ -73,18 +70,18 @@ class GuruDashboardController extends Controller
         $hadir = $presensiHariIni->where('status', 'Hadir')->count();
         $rataRataKehadiran = $totalPresensi > 0 ? round(($hadir / $totalPresensi) * 100, 1) : 0;
 
-        // 8. Jumlah presensi per jadwal (hari ini)
+
         $jumlahPresensiHariIni = $presensiHariIni->pluck('jadwal_id')->unique()->count();
 
-        // 9. Siswa alpha hari ini
+
         $siswaAlpha = $presensiHariIni->where('status', 'Alpha')->count();
 
-        // 10. Jadwal selanjutnya
+
         $jadwalSelanjutnya = $jadwalHariIni
             ->where('jam_mulai', '>', $jamSekarang)
             ->first();
 
-        // 11. Statistik kehadiran per kelas
+
         $kelasYangDiampu = Kelas::whereIn('id', $kelasIds)->get();
 
         $jadwalHariIniDetail = Jadwal::where('hari', $hariNama)
@@ -115,7 +112,7 @@ class GuruDashboardController extends Controller
             ];
         });
 
-        // 12. Riwayat presensi (5 terakhir)
+
         $riwayatPresensi = collect();
 
         $presensis = Presensi::with(['siswa_kelas.siswa', 'jadwal.kelas'])
@@ -124,15 +121,15 @@ class GuruDashboardController extends Controller
             })
             ->orderByDesc('waktu_presensi')
             ->get()
-            ->unique('siswa_kelas_id') // satu data terbaru per siswa
-            ->take(10); // hanya 10 siswa terakhir
+            ->unique('siswa_kelas_id')
+            ->take(10);
 
         foreach ($presensis as $latestPresensi) {
             $siswa = $latestPresensi->siswa_kelas->siswa ?? null;
             $kelas = $latestPresensi->jadwal->kelas ?? null;
             $siswaKelasId = $latestPresensi->siswa_kelas_id;
 
-            // Ambil seluruh presensi siswa ini untuk mapel yang diampu
+
             $presensiSiswa = Presensi::where('siswa_kelas_id', $siswaKelasId)
                 ->whereIn('jadwal_id', function ($query) use ($mapelIds) {
                     $query->select('id')->from('jadwal')->whereIn('mapel_id', $mapelIds);
@@ -155,9 +152,9 @@ class GuruDashboardController extends Controller
             ]);
         }
 
-            // dd($riwayatPresensi);
 
-        // 13. Kirim ke view
+
+
         return view('Guru.dashboard-guru', [
             'hariIni' => $hariIni,
             'jamSekarang' => $jamSekarang,
@@ -183,7 +180,7 @@ class GuruDashboardController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -191,7 +188,7 @@ class GuruDashboardController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -199,7 +196,7 @@ class GuruDashboardController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
@@ -207,7 +204,7 @@ class GuruDashboardController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
@@ -215,7 +212,7 @@ class GuruDashboardController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
     /**
@@ -223,6 +220,6 @@ class GuruDashboardController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

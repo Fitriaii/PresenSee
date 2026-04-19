@@ -19,7 +19,7 @@ class DaftarSiswaController extends Controller
     {
         $user = $request->user();
 
-        // Jika bukan guru, tolak akses
+
         if (!$user || !$user->hasRole('guru')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -36,8 +36,8 @@ class DaftarSiswaController extends Controller
             }
         ]);
 
-        // Jika user adalah guru, filter berdasarkan kelas yang diampu
-        $kelasIds = collect(); // default kosong
+
+        $kelasIds = collect();
 
         if ($guru) {
             $kelasIds = Jadwal::whereHas('mapel', function ($q) use ($guru) {
@@ -51,7 +51,7 @@ class DaftarSiswaController extends Controller
             });
         }
 
-        // 🔍 Search
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_siswa', 'like', '%' . $request->search . '%')
@@ -65,29 +65,30 @@ class DaftarSiswaController extends Controller
             });
         }
 
-        // 🎯 Filter: Jenis Kelas
+
         if ($request->filled('jenis_kelas')) {
             $query->whereHas('siswa_kelas.kelas', function ($q) use ($request) {
                 $q->where('jenis_kelas', $request->jenis_kelas);
             });
         }
 
-        // 🎯 Filter: Tahun Ajaran
+
         if ($request->filled('tahun_ajaran')) {
             $query->whereHas('siswa_kelas', function ($q) use ($request) {
                 $q->where('tahun_ajaran_id', $request->tahun_ajaran);
             });
         }
 
-        // 🎯 Filter: Kelas
+
         if ($request->filled('kelas')) {
             $query->whereHas('siswa_kelas', function ($q) use ($request) {
                 $q->where('kelas_id', $request->kelas);
             });
         }
 
-        // ↕️ Sorting
-        switch ($request->sort) {
+
+        $sort = $request->sort ?? 'nama_siswa_asc';
+        switch ($sort) {
             case 'nama_siswa_asc':
                 $query->orderBy('nama_siswa', 'asc');
                 break;
@@ -100,17 +101,14 @@ class DaftarSiswaController extends Controller
             case 'created_desc':
                 $query->orderBy('created_at', 'desc');
                 break;
-            default:
-                $query->latest();
-                break;
         }
 
         $siswa = $query->paginate(10)->appends($request->query());
 
-        // Ambil dropdown tahun ajaran (semua)
+
         $semuaTahunAjaran = TahunAjaran::all();
 
-        // Kelas dropdown hanya yang diampu guru
+
         $semuaKelas = Kelas::whereIn('id', $kelasIds)->get();
 
         return view('Guru.daftarSiswa', compact('siswa', 'user', 'semuaTahunAjaran', 'semuaKelas'));
@@ -123,7 +121,7 @@ class DaftarSiswaController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -131,7 +129,7 @@ class DaftarSiswaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -139,7 +137,7 @@ class DaftarSiswaController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
@@ -147,7 +145,7 @@ class DaftarSiswaController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
@@ -155,7 +153,7 @@ class DaftarSiswaController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
     /**
@@ -163,6 +161,6 @@ class DaftarSiswaController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

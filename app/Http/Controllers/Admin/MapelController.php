@@ -24,10 +24,10 @@ class MapelController extends Controller
             ]);
         }
 
-    // Query dasar
+
     $mapelQuery = Mapel::with('guru');
 
-    // Search by kode_mapel atau nama_mapel
+
     if ($request->filled('search')) {
         $mapelQuery->where(function ($query) use ($request) {
             $query->where('kode_mapel', 'like', '%' . $request->search . '%')
@@ -35,18 +35,20 @@ class MapelController extends Controller
         });
     }
 
-    // Filter by guru_id
+
     if ($request->filled('guru')) {
         $mapelQuery->where('guru_id', $request->guru);
     }
 
-    // Filter by tahun (created_at)
+
     if ($request->filled('tahun')) {
         $mapelQuery->whereYear('created_at', $request->tahun);
     }
 
-    // Sorting
-    switch ($request->sort) {
+
+    $sort = $request->sort ?? 'nama_mapel_asc';
+
+    switch ($sort) {
         case 'nama_mapel_asc':
             $mapelQuery->orderBy('nama_mapel', 'asc');
             break;
@@ -59,19 +61,16 @@ class MapelController extends Controller
         case 'created_desc':
             $mapelQuery->orderBy('created_at', 'desc');
             break;
-        default:
-            $mapelQuery->latest();
-            break;
     }
 
-    // Data untuk dropdown filter
-    $guruList = Guru::orderBy('nama_guru')->get(); // untuk dropdown guru
+
+    $guruList = Guru::orderBy('nama_guru')->get();
     $tahunList = Mapel::selectRaw('YEAR(created_at) as tahun')
                     ->distinct()
                     ->orderBy('tahun', 'desc')
-                    ->pluck('tahun'); // untuk dropdown tahun
+                    ->pluck('tahun');
 
-    // Paginate
+
     $mapel = $mapelQuery->paginate(10);
 
     return view('Admin.Akademik.Mapel.index', compact('user', 'mapel', 'guruList', 'tahunList'));
@@ -130,7 +129,7 @@ class MapelController extends Controller
      */
     public function show(Mapel $mapel)
     {
-        // Show the details of the specified mapel
+
         return view('Admin.Akademik.Mapel.show', compact('mapel'));
     }
     /**

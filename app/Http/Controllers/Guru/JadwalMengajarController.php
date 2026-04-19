@@ -46,7 +46,7 @@ class JadwalMengajarController extends Controller
             ->orderBy('jadwal.hari')
             ->orderBy('kls.nama_kelas');
 
-        // 🔍 Filter pencarian bebas
+
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('kls.nama_kelas', 'like', "%$search%")
@@ -54,47 +54,43 @@ class JadwalMengajarController extends Controller
             });
         }
 
-        // 🎯 Filter Hari
+
         if ($request->filled('hari')) {
             $query->where('jadwal.hari', $request->hari);
         }
 
-        // 🎯 Filter Kelas
+
         if ($request->filled('kelas')) {
             $query->where('jadwal.kelas_id', $request->kelas);
         }
 
-        // 🎯 Filter Mapel
+
         if ($request->filled('mapel')) {
             $query->where('jadwal.mapel_id', $request->mapel);
         }
 
-        // ↕️ Sorting
-        if ($sort = $request->input('sort')) {
-            switch ($sort) {
-                case 'created_asc':
-                    $query->orderBy('jadwal.created_at', 'asc');
-                    break;
-                case 'created_desc':
-                    $query->orderBy('jadwal.created_at', 'desc');
-                    break;
-                case 'jam_mulai_asc':
-                    $query->orderBy('jadwal.jam_mulai', 'asc');
-                    break;
-                case 'jam_mulai_desc':
-                    $query->orderBy('jadwal.jam_mulai', 'desc');
-                    break;
-                default:
-                    $query->latest('jadwal.created_at');
-                    break;
-            }
+
+        $sort = $request->sort ?? 'created_asc';
+        switch ($sort) {
+            case 'created_asc':
+                $query->orderBy('jadwal.created_at', 'asc');
+                break;
+            case 'created_desc':
+                $query->orderBy('jadwal.created_at', 'desc');
+                break;
+            case 'jam_mulai_asc':
+                $query->orderBy('jadwal.jam_mulai', 'asc');
+                break;
+            case 'jam_mulai_desc':
+                $query->orderBy('jadwal.jam_mulai', 'desc');
+                break;
         }
 
-        // 📄 Pagination dan group
+
         $jadwalPaginated = $query->paginate(10)->appends($request->query());
         $jadwalCollection = $jadwalPaginated->getCollection();
 
-        // 📊 Group by Hari > Kelas
+
         $groupedKelas = $jadwalCollection
             ->groupBy('hari')
             ->map(function ($itemsPerHari) {
@@ -106,7 +102,7 @@ class JadwalMengajarController extends Controller
             'groupedKelas' => $groupedKelas,
             'jadwal' => $jadwalPaginated,
             'no' => 1,
-            'semuaKelas' => Kelas::orderBy('nama_kelas')->get(), // Optional
+            'semuaKelas' => Kelas::orderBy('nama_kelas')->get(),
             'semuaMapel' => Mapel::where('guru_id', $guru->id)->orderBy('nama_mapel')->get(),
         ]);
     }
@@ -117,7 +113,7 @@ class JadwalMengajarController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -125,7 +121,7 @@ class JadwalMengajarController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -133,7 +129,7 @@ class JadwalMengajarController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
@@ -141,7 +137,7 @@ class JadwalMengajarController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
@@ -149,7 +145,7 @@ class JadwalMengajarController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
     /**
@@ -157,6 +153,6 @@ class JadwalMengajarController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

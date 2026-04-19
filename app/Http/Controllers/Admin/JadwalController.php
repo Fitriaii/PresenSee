@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\JadwalExport;
 use App\Http\Controllers\Controller;
-use App\Models\Guru;
 use App\Models\Jadwal;
 use App\Models\Kelas;
 use App\Models\Mapel;
@@ -37,7 +36,7 @@ class JadwalController extends Controller
             ->orderBy('hari')
             ->orderBy('kelas.nama_kelas');
 
-        // 🔍 Filter: Pencarian bebas
+
         if ($search = request('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('kelas.nama_kelas', 'like', "%$search%")
@@ -46,52 +45,54 @@ class JadwalController extends Controller
             });
         }
 
-        // Filter: Hari
+
         if ($request->filled('hari')) {
             $query->where('hari', $request->hari);
         }
 
-        // Filter: Kelas
+
         if ($request->filled('kelas')){
             $query->where('kelas_id', $request->kelas);
         }
 
-        // Filter: Mape
+
         if ($request->filled('mapel')) {
             $query->where('mapel_id', $request->mapel);
         }
 
-        // 🔀 Sorting berdasarkan tanggal dibuat (opsional, kalau ada field created_at)
-        if ($sort = request('sort')) {
-            switch ($sort) {
-                case 'created_asc':
-                    $query->orderBy('jadwal.created_at', 'asc');
-                    break;
-                case 'created_desc':
-                    $query->orderBy('jadwal.created_at', 'desc');
-                    break;
-                case 'jam_mulai_asc':
-                    $query->orderBy('jadwal.jam_mulai', 'asc');
-                    break;
-                case 'jam_mulai_desc':
-                    $query->orderBy('jadwal.jam_mulai', 'desc');
-                    break;
-                default:
-                    $query->latest('jadwal.created_at');
-                    break;
-            }
+
+        $sort = $request->sort ?? 'created_asc';
+
+        switch ($sort) {
+            case 'created_asc':
+                $query->orderBy('jadwal.created_at', 'asc');
+                break;
+            case 'created_desc':
+                $query->orderBy('jadwal.created_at', 'desc');
+                break;
+            case 'jam_mulai_asc':
+                $query->orderBy('jadwal.jam_mulai', 'asc');
+                break;
+            case 'jam_mulai_desc':
+                $query->orderBy('jadwal.jam_mulai', 'desc');
+                break;
+            default:
+                $query->orderBy('jadwal.created_at', 'asc');
+                break;
         }
 
 
-        // 📄 Pagination dan pelengkap filter
+
         $jadwalPaginated = $query->paginate(10)->appends(request()->all());
         $jadwalCollection = $jadwalPaginated->getCollection();
 
-        // 📊 Group by Hari > Kelas
+
         $groupedKelas = $jadwalCollection
             ->groupBy('hari')
             ->map(function ($itemsPerHari) {
-                return $itemsPerHari->groupBy('kelas_id');
+                return $itemsPerHari
+                ->sortBy('jam_mulai')
+                ->groupBy('kelas_id');
             });
 
         return view('Admin.Akademik.Jadwal.index', [
@@ -110,7 +111,7 @@ class JadwalController extends Controller
     public function create()
     {
         $kelasList = Kelas::all();
-        $mapelList = Mapel::with('guru')->get(); // eager load guru dari mapel
+        $mapelList = Mapel::with('guru')->get();
 
         return view('Admin.Akademik.Jadwal.create', compact('kelasList', 'mapelList'));
     }
@@ -129,11 +130,9 @@ class JadwalController extends Controller
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
         ]);
 
-        $guruId = auth()->user->guru->id;
+        $guruId = Mapel::findOrFail($request->mapel_id)->guru_id;
 
-        // CEK DUPLIKAT
-        $duplikat = Jadwal::where('guru_id', $guruId)
-            ->where('kelas_id', $request->kelas_id)
+        $duplikat = Jadwal::where('kelas_id', $request->kelas_id)
             ->where('mapel_id', $request->mapel_id)
             ->where('hari', $request->hari)
             ->where('jam_mulai', $request->jam_mulai)
@@ -141,55 +140,46 @@ class JadwalController extends Controller
             ->exists();
 
         if ($duplikat) {
-            return back()->with([
+            return back()->withInput()->with([
                 'status' => 'error',
                 'message' => 'Jadwal ini sudah ada.'
             ]);
         }
 
-        // BENTROK GURU
-        $bentrokGuru = Jadwal::where('guru_id', $guruId)
-            ->where('hari', $request->hari)
+        $bentrokGuru = Jadwal::where('hari', $request->hari)
+            ->whereHas('mapel', function ($query) use ($guruId) {
+                $query->where('guru_id', $guruId);
+            })
             ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('jam_mulai', '<=', $request->jam_mulai)
-                        ->where('jam_selesai', '>=', $request->jam_selesai);
-                    });
+                $query->where('jam_mulai', '<', $request->jam_selesai)
+                    ->where('jam_selesai', '>', $request->jam_mulai);
             })
             ->exists();
 
         if ($bentrokGuru) {
-            return back()->with([
+            return back()->withInput()->with([
                 'status' => 'error',
-                'message' => 'Guru sudah memiliki jadwal di waktu yang sama.'
+                'message' => 'Jadwal bentrok: guru sudah mengajar di kelas lain pada waktu yang sama.'
             ]);
         }
 
-        // BENTROK KELAS
         $bentrokKelas = Jadwal::where('kelas_id', $request->kelas_id)
             ->where('hari', $request->hari)
             ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('jam_mulai', '<=', $request->jam_mulai)
-                        ->where('jam_selesai', '>=', $request->jam_selesai);
-                    });
+                $query->where('jam_mulai', '<', $request->jam_selesai)
+                    ->where('jam_selesai', '>', $request->jam_mulai);
             })
             ->exists();
 
         if ($bentrokKelas) {
-            return back()->with([
+            return back()->withInput()->with([
                 'status' => 'error',
-                'message' => 'Kelas sudah memiliki jadwal di waktu yang sama.'
+                'message' => 'Jadwal bentrok: kelas sudah memiliki jadwal lain pada waktu yang sama.'
             ]);
         }
 
         try {
             $jadwal = new Jadwal();
-            $jadwal->guru_id = $guruId;
             $jadwal->kelas_id = $request->kelas_id;
             $jadwal->mapel_id = $request->mapel_id;
             $jadwal->hari = $request->hari;
@@ -215,7 +205,7 @@ class JadwalController extends Controller
      */
     public function show(Jadwal $jadwal)
     {
-        // Jika ada logika khusus untuk menampilkan detail jadwal, bisa ditambahkan di sini
+
         return view('Admin.Akademik.Jadwal.show', compact('jadwal'));
     }
 
@@ -226,7 +216,7 @@ class JadwalController extends Controller
     public function edit(Jadwal $jadwal)
     {
         $kelasList = Kelas::all();
-        $mapelList = Mapel::with('guru')->get(); // eager load guru dari mapel
+        $mapelList = Mapel::with('guru')->get();
 
         return view('Admin.Akademik.Jadwal.edit', [
             'jadwal' => $jadwal,
@@ -249,11 +239,9 @@ class JadwalController extends Controller
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
         ]);
 
-        $guruId = $jadwal->guru_id; 
+        $guruId = Mapel::findOrFail($request->mapel_id)->guru_id;
 
-        // 🔴 CEK DUPLIKAT (exclude diri sendiri)
-        $duplikat = Jadwal::where('guru_id', $guruId)
-            ->where('kelas_id', $request->kelas_id)
+        $duplikat = Jadwal::where('kelas_id', $request->kelas_id)
             ->where('mapel_id', $request->mapel_id)
             ->where('hari', $request->hari)
             ->where('jam_mulai', $request->jam_mulai)
@@ -268,45 +256,37 @@ class JadwalController extends Controller
             ]);
         }
 
-        // 🔴 CEK BENTROK GURU
-        $bentrokGuru = Jadwal::where('guru_id', $guruId)
-            ->where('hari', $request->hari)
+        $bentrokGuru = Jadwal::where('hari', $request->hari)
             ->where('id', '!=', $jadwal->id)
+            ->whereHas('mapel', function ($query) use ($guruId) {
+                $query->where('guru_id', $guruId);
+            })
             ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('jam_mulai', '<=', $request->jam_mulai)
-                        ->where('jam_selesai', '>=', $request->jam_selesai);
-                    });
+                $query->where('jam_mulai', '<', $request->jam_selesai)
+                    ->where('jam_selesai', '>', $request->jam_mulai);
             })
             ->exists();
 
         if ($bentrokGuru) {
             return back()->withInput()->with([
                 'status' => 'error',
-                'message' => 'Guru sudah memiliki jadwal di waktu yang sama.'
+                'message' => 'Jadwal bentrok: guru sudah mengajar di waktu yang sama.'
             ]);
         }
 
-        // 🔴 CEK BENTROK KELAS
         $bentrokKelas = Jadwal::where('kelas_id', $request->kelas_id)
             ->where('hari', $request->hari)
             ->where('id', '!=', $jadwal->id)
             ->where(function ($query) use ($request) {
-                $query->whereBetween('jam_mulai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhereBetween('jam_selesai', [$request->jam_mulai, $request->jam_selesai])
-                    ->orWhere(function ($q) use ($request) {
-                        $q->where('jam_mulai', '<=', $request->jam_mulai)
-                        ->where('jam_selesai', '>=', $request->jam_selesai);
-                    });
+                $query->where('jam_mulai', '<', $request->jam_selesai)
+                    ->where('jam_selesai', '>', $request->jam_mulai);
             })
             ->exists();
 
         if ($bentrokKelas) {
             return back()->withInput()->with([
                 'status' => 'error',
-                'message' => 'Kelas sudah memiliki jadwal di waktu yang sama.'
+                'message' => 'Jadwal bentrok: kelas sudah memiliki jadwal lain pada waktu yang sama.'
             ]);
         }
 

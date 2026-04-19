@@ -29,7 +29,7 @@ class AdminController extends Controller
 
         $query = User::role('admin');
 
-        // Search by name/email/username
+
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
@@ -37,13 +37,15 @@ class AdminController extends Controller
             });
         }
 
-        // Filter by status
+
         if ($request->filled('status') && $request->status !== '') {
-            $query->where('is_logged_in', $request->status); // 1 = aktif, 0 = nonaktif
+            $query->where('is_logged_in', $request->status);
         }
 
-        // Sorting
-        switch ($request->sort) {
+
+        $sort = $request->sort ?? 'name_asc';
+
+        switch ($sort) {
             case 'name_asc':
                 $query->orderBy('name', 'asc');
                 break;
@@ -59,15 +61,12 @@ class AdminController extends Controller
             case 'last_login_desc':
                 $query->orderBy('last_login_at', 'desc');
                 break;
-            default:
-                $query->latest(); // default: by created_at desc
-                break;
         }
 
         $perPage = $request->perPage ?? 10;
         $admins = $query->paginate($perPage);
 
-        // Tandai admin yang sedang login
+        
         $admins->map(function ($admin) use ($user) {
             $admin->is_logged_in = ($admin->id === $user->id);
         });
@@ -100,7 +99,7 @@ class AdminController extends Controller
      */
     public function store(Request $request)
     {
-        // Gunakan Validator manual
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email:rfc|unique:users,email',
@@ -132,7 +131,7 @@ class AdminController extends Controller
             }
         });
 
-        // ⛔ STOP otomatis kalau error
+
         $validator->validate();
 
         try {
@@ -143,7 +142,7 @@ class AdminController extends Controller
                 'email_verified_at' => null,
             ];
 
-            // Upload gambar
+
             if ($request->hasFile('profile_picture')) {
                 $file = $request->file('profile_picture');
                 $path = $file->store('profile_picture', 'public');
@@ -212,14 +211,14 @@ class AdminController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email:rfc|unique:users,email' . $admin->id,
+            'email' => 'required|email:rfc|unique:users,email,' . $admin->id,
             'password' => [
                 'required',
                 'string',
                 'min:8',
                 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/'
             ],
-            'profile_picture' => 'nullable|image|max:2048', // max 2MB
+            'profile_picture' => 'nullable|image|max:2048',
         ], [
             'name.required' => 'Nama wajib diisi.',
             'email.required' => 'Email wajib diisi.',
@@ -269,7 +268,7 @@ class AdminController extends Controller
     public function destroy(Request $request, User $admin)
     {
         try {
-            // Cek apakah user memiliki role admin
+
             if (!$admin->hasRole('admin')) {
                 return redirect()->back()->with([
                     'status' => 'error',
@@ -277,7 +276,7 @@ class AdminController extends Controller
                 ]);
             }
 
-            // Hapus user
+
             $admin->delete();
 
             return redirect()->route('admin.index')->with([

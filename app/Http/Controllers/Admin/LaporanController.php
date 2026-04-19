@@ -37,7 +37,7 @@ class LaporanController extends Controller
             'jadwal.mapel.guru'
         ]);
 
-        // Filter
+
         if ($tahunAjaranId = $request->input('tahun_ajaran_id')) {
             $query->whereHas('siswa_kelas.tahunAjaran', fn($q) => $q->where('id', $tahunAjaranId));
         }
@@ -92,10 +92,10 @@ class LaporanController extends Controller
             });
         }
 
-        // Ambil semua data presensi (setelah filter)
+
         $allPresensi = $query->orderBy('waktu_presensi', 'desc')->get();
 
-        // Kelompokkan berdasarkan siswa
+
         $rekapCollection = $allPresensi->groupBy('siswa_kelas_id')->map(function ($presensis) {
             $siswaKelas = $presensis->first()->siswa_kelas;
             $siswa = $siswaKelas->siswa ?? null;
@@ -122,7 +122,7 @@ class LaporanController extends Controller
             ];
         })->values();
 
-        // Paginate hasil rekap per siswa
+
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 10;
         $currentItems = $rekapCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
@@ -148,7 +148,7 @@ class LaporanController extends Controller
 
     public function exportPdf(Request $request)
     {
-        // Validasi wajib: mapel harus dipilih
+
         if (!$request->filled('mapel_id')) {
             return redirect()->back()->with([
                 'status' => 'error',
@@ -156,7 +156,7 @@ class LaporanController extends Controller
             ]);
         }
 
-        // Ambil data presensi dengan relasi
+
         $query = Presensi::with([
             'siswa_kelas.siswa',
             'siswa_kelas.kelas',
@@ -169,10 +169,10 @@ class LaporanController extends Controller
         ->join('siswa_kelas', 'presensi.siswa_kelas_id', '=', 'siswa_kelas.id')
         ->select('presensi.*');
 
-        // Filter berdasarkan mapel (wajib)
+
         $query->where('jadwal.mapel_id', $request->mapel_id);
 
-        // Filter tambahan
+
         if ($request->filled('tahun_ajaran_id')) {
             $query->where('siswa_kelas.tahun_ajaran_id', $request->tahun_ajaran_id);
         }
@@ -200,7 +200,7 @@ class LaporanController extends Controller
             });
         }
 
-        // Filter tanggal
+
         if ($request->periode === 'harian' && $request->filled('tanggal')) {
             $query->whereDate('waktu_presensi', $request->tanggal);
         } elseif ($request->periode === 'bulanan' && $request->filled('bulan') && $request->filled('tahun')) {
@@ -214,7 +214,7 @@ class LaporanController extends Controller
 
         $presensi = $query->orderBy('waktu_presensi', 'asc')->get();
 
-        // Rekap
+
         $rekapPerSiswa = $presensi->groupBy('siswa_kelas_id')->map(function ($presensis) {
             $siswaKelas = $presensis->first()->siswa_kelas;
             $siswa = $siswaKelas->siswa ?? null;
@@ -275,7 +275,7 @@ class LaporanController extends Controller
      */
     public function create()
     {
-        //
+
     }
 
     /**
@@ -283,7 +283,7 @@ class LaporanController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
     }
 
     /**
@@ -291,7 +291,7 @@ class LaporanController extends Controller
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**
@@ -299,7 +299,7 @@ class LaporanController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
@@ -307,7 +307,7 @@ class LaporanController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
     }
 
     /**
@@ -315,6 +315,6 @@ class LaporanController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
     }
 }

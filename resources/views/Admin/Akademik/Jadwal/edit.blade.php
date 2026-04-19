@@ -143,7 +143,8 @@
                         >
                             <option value="" disabled>Pilih Kelas</option>
                             @foreach ($kelasList as $kelas)
-                                <option value="{{ $kelas->id }}" {{ old('kelas_id') == $kelas->id ? 'selected' : ''}}>
+                                <option value="{{ $kelas->id }}"
+                                    {{ old('kelas_id', $jadwal->kelas_id ?? '') == $kelas->id ? 'selected' : '' }}>
                                     {{ $kelas->nama_kelas }}
                                 </option>
                             @endforeach
@@ -226,19 +227,22 @@
 </div>
 
 <script>
-    window.addEventListener('load', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         const mapel = document.getElementById('mapel');
         const guruInput = document.getElementById('guru_pengampu');
         const guruHidden = document.getElementById('guru_pengampu_hidden');
 
-        const selectedOption = mapel.options[mapel.selectedIndex];
-        const guru = selectedOption.getAttribute('data-guru');
+        function updateGuru() {
+            const selectedOption = mapel.options[mapel.selectedIndex];
+            const guru = selectedOption.getAttribute('data-guru') || '';
 
-        // ✅ hanya set kalau ADA nilainya
-        if (guru && guru.trim() !== '') {
             guruInput.value = guru;
             guruHidden.value = guru;
         }
+
+        updateGuru();
+
+        mapel.addEventListener('change', updateGuru);
     });
 
     const inputJamMulai = document.getElementById('jam_mulai');
@@ -257,6 +261,27 @@
 
 </script>
 
+@if (session('status') === 'success' && session('message'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: @json(session('message')),
+            showConfirmButton: false,
+            timer: 2000
+        });
+    </script>
+@endif
 
+@if (session('status') === 'error' && session('message'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: @json(session('message')),
+            showConfirmButton: true
+        });
+    </script>
+@endif
 
 @endsection
